@@ -1,50 +1,50 @@
 package ru.yandex.practicum.filmorate.controllers;
 
-import org.apache.tomcat.jni.Local;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 class UserControllerTest {
 
     UserController controller = new UserController();
-    static User user = new User();
-    static User updatedUser = new User();
+    static User user;
+    static User updatedUser;
 
-    @BeforeAll
-    static void init() {
-        user.setId(1);
+    @BeforeEach
+    void init() {
+        user = new User();
         user.setEmail("mail@mail.ru");
         user.setLogin("nagibator");
         user.setName("Pyotr");
         user.setBirthday(LocalDate.of(1980, 10, 15));
 
+        updatedUser = new User();
         updatedUser.setId(1);
         updatedUser.setEmail("mail@mail.ru");
         updatedUser.setLogin("Nagibator80");
         updatedUser.setName("Pyotr");
         updatedUser.setBirthday(LocalDate.of(1980, 10, 15));
+
+        controller.create(user);
     }
 
     @Test
     void shouldReturnUserList() {
-        controller.create(user);
         Assert.notEmpty(controller.getAll(), "Вернулся пустой список, так быть не должно!");
     }
 
     @Test
     void shouldCreateUser() {
+        user.setId(0);
+        user.setLogin("KirovReporting");
         Assertions.assertEquals(ResponseEntity.ok("verified"), controller.create(user));
     }
 
@@ -68,6 +68,16 @@ class UserControllerTest {
         badUser.setEmail("");
         badUser.setLogin("adveritae");
         badUser.setBirthday(LocalDate.of(1990, 1, 5));
+        ResponseEntity<String> idPresentOnCreate = controller.create(badUser);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, idPresentOnCreate.getStatusCode());
+
+        badUser.setId(584);
+        ResponseEntity<String> noIdInDatabaseOnUpdate = controller.update(badUser);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, noIdInDatabaseOnUpdate.getStatusCode());
+
+        badUser.setId(0);
+        ResponseEntity<String> noIdOnUpdate = controller.update(badUser);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, noIdOnUpdate.getStatusCode());
 
         ResponseEntity<String> emptyEmail = controller.create(badUser);
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, emptyEmail.getStatusCode());
@@ -94,7 +104,6 @@ class UserControllerTest {
     @Test
     void shouldApplyLoginToNameIfNameIsEmpty() {
         User namelessUser = new User();
-        namelessUser.setId(3);
         namelessUser.setEmail("E@mail.ru");
         namelessUser.setLogin("ihavenoname");
         namelessUser.setName("");

@@ -18,7 +18,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private final Map<String, Film> films = new HashMap<>();
+    private final Map<Integer, Film> films = new HashMap<>();
+    private int idCounter = 1;
 
     @GetMapping
     public List<Film> getAll() {
@@ -29,13 +30,16 @@ public class FilmController {
     @PostMapping
     public ResponseEntity<String> create(@RequestBody Film film) {
         try {
+            if (film.getId() != 0) {
+                throw new ValidationException("Для создания не нужен id!");
+            }
             verifyFilm(film);
         } catch (ValidationException exception) {
             log.error(exception.getMessage());
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-
-        films.put(film.getName(), film);
+        setId(film);
+        films.put(film.getId(), film);
         log.info("Новый фильм: " + film);
         return ResponseEntity.ok("verified");
     }
@@ -43,13 +47,22 @@ public class FilmController {
     @PutMapping
     public ResponseEntity<String> update(@RequestBody Film film) {
         try {
+            if (film.getId() == 0) {
+                throw new ValidationException("Для обновления объекта нужен id!");
+            }
+            if (!films.containsKey(film.getId())) {
+                throw new ValidationException("Отсутствует объект для обновления!");
+            }
             verifyFilm(film);
         } catch (ValidationException exception) {
             log.error(exception.getMessage());
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-
-        films.put(film.getName(), film);
+        Film filmToUpdate = films.get(film.getId());
+        filmToUpdate.setName(film.getName());
+        filmToUpdate.setDescription(film.getDescription());
+        filmToUpdate.setReleaseDate(film.getReleaseDate());
+        filmToUpdate.setDuration(film.getDuration());
         log.info("Обновленный фильм: " + film);
         return ResponseEntity.ok("verified");
     }
@@ -68,5 +81,9 @@ public class FilmController {
         if (film.getDuration().isNegative()) {
             throw new ValidationException("Длительность не может быть отрицательной!");
         }
+    }
+
+    public void setId(Film film) {
+        film.setId(idCounter++);
     }
 }

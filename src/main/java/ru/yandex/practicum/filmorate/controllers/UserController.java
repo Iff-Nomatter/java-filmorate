@@ -16,7 +16,8 @@ import java.util.Map;
 @Slf4j
 @RestController
 public class UserController {
-    private final Map<String, User> users = new HashMap<>();
+    private final Map<Integer, User> users = new HashMap<>();
+    private int idCounter = 1;
 
     @GetMapping("/users")
     public List<User> getAll() {
@@ -27,13 +28,16 @@ public class UserController {
     @PostMapping("/users")
     public ResponseEntity<String> create(@RequestBody User user) {
         try {
+            if (user.getId() != 0) {
+                throw new ValidationException("Для создания не нужен id!");
+            }
             verifyUser(user);
         } catch (ValidationException exception) {
             log.error(exception.getMessage());
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-
-        users.put(user.getEmail(), user);
+        setId(user);
+        users.put(user.getId(), user);
         log.info("Новый пользователь: " + user);
         return ResponseEntity.ok("verified");
     }
@@ -41,13 +45,22 @@ public class UserController {
     @PutMapping("/users")
     public ResponseEntity<String> update(@RequestBody User user) {
         try {
+            if (user.getId() == 0) {
+                throw new ValidationException("Для обновления пользователя нужен id!");
+            }
+            if (!users.containsKey(user.getId())) {
+                throw new ValidationException("Отсутствует пользователь для обновления!");
+            }
             verifyUser(user);
         } catch (ValidationException exception) {
             log.error(exception.getMessage());
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-
-        users.put(user.getEmail(), user);
+        User userToUpdate = users.get(user.getId());
+        userToUpdate.setBirthday(user.getBirthday());
+        userToUpdate.setLogin(user.getLogin());
+        userToUpdate.setEmail(user.getEmail());
+        userToUpdate.setName(user.getName());
         log.info("Обновленный пользователь: " + user);
         return ResponseEntity.ok("verified");
     }
@@ -68,5 +81,9 @@ public class UserController {
         if (user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
+    }
+
+    public void setId(User user) {
+        user.setId(idCounter++);
     }
 }
