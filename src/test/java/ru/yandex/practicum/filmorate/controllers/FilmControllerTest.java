@@ -71,19 +71,19 @@ class FilmControllerTest {
         badFilm.setReleaseDate(LocalDate.of(2021, 1, 1));
         badFilm.setDuration(Duration.ofMinutes(30));
         ResponseEntity<String> idPresentOnCreate = controller.create(badFilm);
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, idPresentOnCreate.getStatusCode());
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, idPresentOnCreate.getStatusCode());
 
         badFilm.setId(197);
         ResponseEntity<String> noIdInDatabaseOnUpdate = controller.update(badFilm);
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, noIdInDatabaseOnUpdate.getStatusCode());
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, noIdInDatabaseOnUpdate.getStatusCode());
 
         badFilm.setId(0);
         ResponseEntity<String> noIdOnUpdate = controller.update(badFilm);
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, noIdOnUpdate.getStatusCode());
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, noIdOnUpdate.getStatusCode());
 
         badFilm.setName("");
         ResponseEntity<String> emptyName = controller.create(badFilm);
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, emptyName.getStatusCode());
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, emptyName.getStatusCode());
 
         badFilm.setName("name");
         badFilm.setDescription("descriptiondescriptiondescriptiondescriptiondescriptiondescription"+
@@ -93,16 +93,16 @@ class FilmControllerTest {
                 "descriptiondescriptiondescriptiondescriptiondescriptiondescription" +
                 "descriptiondescriptiondescriptiondescriptiondescriptiondescription");
         ResponseEntity<String> descTooLong = controller.create(badFilm);
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, descTooLong.getStatusCode());
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, descTooLong.getStatusCode());
 
         badFilm.setDescription("description");
         badFilm.setReleaseDate(LocalDate.of(1721, 1, 1));
         ResponseEntity<String> releaseTooEarly = controller.create(badFilm);
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, releaseTooEarly.getStatusCode());
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, releaseTooEarly.getStatusCode());
 
         badFilm.setReleaseDate(LocalDate.of(2021, 1, 1));
         badFilm.setDuration(Duration.ofMinutes(-30));
         ResponseEntity<String> negativeDuration = controller.create(badFilm);
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, negativeDuration.getStatusCode());
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, negativeDuration.getStatusCode());
     }
 }

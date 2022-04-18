@@ -36,7 +36,7 @@ public class FilmController {
             verifyFilm(film);
         } catch (ValidationException exception) {
             log.error(exception.getMessage());
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         setId(film);
         films.put(film.getId(), film);
@@ -56,7 +56,7 @@ public class FilmController {
             verifyFilm(film);
         } catch (ValidationException exception) {
             log.error(exception.getMessage());
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         Film filmToUpdate = films.get(film.getId());
         filmToUpdate.setName(film.getName());

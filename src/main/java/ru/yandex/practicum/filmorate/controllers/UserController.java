@@ -34,7 +34,7 @@ public class UserController {
             verifyUser(user);
         } catch (ValidationException exception) {
             log.error(exception.getMessage());
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         setId(user);
         users.put(user.getId(), user);
@@ -54,7 +54,7 @@ public class UserController {
             verifyUser(user);
         } catch (ValidationException exception) {
             log.error(exception.getMessage());
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         User userToUpdate = users.get(user.getId());
         userToUpdate.setBirthday(user.getBirthday());
