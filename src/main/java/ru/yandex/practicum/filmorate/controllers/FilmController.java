@@ -1,89 +1,21 @@
 package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
-public class FilmController {
-    private final Map<Integer, Film> films = new HashMap<>();
-    private int idCounter = 1;
+public class FilmController extends Controller<Film> {
 
-    @GetMapping
-    public List<Film> getAll() {
-        log.info("Фильмов в базе: {}", films.size());
-        return new ArrayList<>(films.values());
-    }
-
-    @PostMapping
-    public ResponseEntity<String> create(@RequestBody Film film) {
-        try {
-            if (film.getId() != 0) {
-                throw new ValidationException("Для создания не нужен id!");
-            }
-            verifyFilm(film);
-        } catch (ValidationException exception) {
-            log.error(exception.getMessage());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        setId(film);
-        films.put(film.getId(), film);
-        log.info("Новый фильм: " + film);
-        return ResponseEntity.ok("verified");
-    }
-
-    @PutMapping
-    public ResponseEntity<String> update(@RequestBody Film film) {
-        try {
-            if (film.getId() == 0) {
-                throw new ValidationException("Для обновления объекта нужен id!");
-            }
-            if (!films.containsKey(film.getId())) {
-                throw new ValidationException("Отсутствует объект для обновления!");
-            }
-            verifyFilm(film);
-        } catch (ValidationException exception) {
-            log.error(exception.getMessage());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        Film filmToUpdate = films.get(film.getId());
+    @Override
+    public void updateParameters(Film film) {
+        Film filmToUpdate = entries.get(film.getId());
         filmToUpdate.setName(film.getName());
         filmToUpdate.setDescription(film.getDescription());
         filmToUpdate.setReleaseDate(film.getReleaseDate());
         filmToUpdate.setDuration(film.getDuration());
         log.info("Обновленный фильм: " + film);
-        return ResponseEntity.ok("verified");
-    }
-
-    public void verifyFilm(Film film) {
-        LocalDate earliestPossible = LocalDate.of(1895, 12, 28);
-        if (film.getName().isBlank()) {
-            throw new ValidationException("Название фильма не может быть пустым!");
-        }
-        if (film.getDescription().length() > 200) {
-            throw new ValidationException("Описание не может быть длиннее 200 символов!");
-        }
-        if (film.getReleaseDate().isBefore(earliestPossible)) {
-            throw new ValidationException("Дата выхода не может быть ранее, чем " + earliestPossible);
-        }
-        if (film.getDuration().isNegative()) {
-            throw new ValidationException("Длительность не может быть отрицательной!");
-        }
-    }
-
-    public void setId(Film film) {
-        film.setId(idCounter++);
     }
 }

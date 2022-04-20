@@ -1,16 +1,23 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
+import lombok.EqualsAndHashCode;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Past;
+import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
 
-@Slf4j
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class User {
-    private int id;
+public class User extends IdHolder {
+    @Email
     private String email;
+    @NotBlank
+    @Pattern(regexp = "^\\S+$", message = "не должен содержать пробелы")
     private String login;
     private String name;
+    @Past
     private LocalDate birthday;
 }

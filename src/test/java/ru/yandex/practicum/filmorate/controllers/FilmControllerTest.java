@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controllers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -11,7 +10,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
-
 
 class FilmControllerTest {
 
@@ -60,49 +58,5 @@ class FilmControllerTest {
             }
         }
         Assertions.assertNotNull(checkFilm);
-    }
-
-    @Test
-    void shouldThrowExceptionWhenOneOfParametersIsBad() {
-        Film badFilm = new Film();
-        badFilm.setId(14);
-        badFilm.setName("name");
-        badFilm.setDescription("description");
-        badFilm.setReleaseDate(LocalDate.of(2021, 1, 1));
-        badFilm.setDuration(Duration.ofMinutes(30));
-        ResponseEntity<String> idPresentOnCreate = controller.create(badFilm);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, idPresentOnCreate.getStatusCode());
-
-        badFilm.setId(197);
-        ResponseEntity<String> noIdInDatabaseOnUpdate = controller.update(badFilm);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, noIdInDatabaseOnUpdate.getStatusCode());
-
-        badFilm.setId(0);
-        ResponseEntity<String> noIdOnUpdate = controller.update(badFilm);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, noIdOnUpdate.getStatusCode());
-
-        badFilm.setName("");
-        ResponseEntity<String> emptyName = controller.create(badFilm);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, emptyName.getStatusCode());
-
-        badFilm.setName("name");
-        badFilm.setDescription("descriptiondescriptiondescriptiondescriptiondescriptiondescription"+
-                "descriptiondescriptiondescriptiondescriptiondescriptiondescription" +
-                "descriptiondescriptiondescriptiondescriptiondescriptiondescription" +
-                "descriptiondescriptiondescriptiondescriptiondescriptiondescription" +
-                "descriptiondescriptiondescriptiondescriptiondescriptiondescription" +
-                "descriptiondescriptiondescriptiondescriptiondescriptiondescription");
-        ResponseEntity<String> descTooLong = controller.create(badFilm);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, descTooLong.getStatusCode());
-
-        badFilm.setDescription("description");
-        badFilm.setReleaseDate(LocalDate.of(1721, 1, 1));
-        ResponseEntity<String> releaseTooEarly = controller.create(badFilm);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, releaseTooEarly.getStatusCode());
-
-        badFilm.setReleaseDate(LocalDate.of(2021, 1, 1));
-        badFilm.setDuration(Duration.ofMinutes(-30));
-        ResponseEntity<String> negativeDuration = controller.create(badFilm);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, negativeDuration.getStatusCode());
     }
 }

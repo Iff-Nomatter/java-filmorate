@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controllers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import ru.yandex.practicum.filmorate.model.User;
@@ -59,46 +58,6 @@ class UserControllerTest {
             }
         }
         Assertions.assertNotNull(checkUser);
-    }
-
-    @Test
-    void shouldThrowExceptionWhenOneOfParametersIsBad() {
-        User badUser = new User();
-        badUser.setId(2);
-        badUser.setEmail("");
-        badUser.setLogin("adveritae");
-        badUser.setBirthday(LocalDate.of(1990, 1, 5));
-        ResponseEntity<String> idPresentOnCreate = controller.create(badUser);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, idPresentOnCreate.getStatusCode());
-
-        badUser.setId(584);
-        ResponseEntity<String> noIdInDatabaseOnUpdate = controller.update(badUser);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, noIdInDatabaseOnUpdate.getStatusCode());
-
-        badUser.setId(0);
-        ResponseEntity<String> noIdOnUpdate = controller.update(badUser);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, noIdOnUpdate.getStatusCode());
-
-        ResponseEntity<String> emptyEmail = controller.create(badUser);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, emptyEmail.getStatusCode());
-
-        badUser.setEmail("badusergmail.com");
-        ResponseEntity<String> emailWithoutSpecialSymbol = controller.create(badUser);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, emailWithoutSpecialSymbol.getStatusCode());
-
-        badUser.setEmail("baduser@gmail.com");
-        badUser.setLogin("");
-        ResponseEntity<String> emptyLogin = controller.create(badUser);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, emptyLogin.getStatusCode());
-
-        badUser.setLogin("ad veritae");
-        ResponseEntity<String> loginWithSpaceChar = controller.create(badUser);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, loginWithSpaceChar.getStatusCode());
-
-        badUser.setLogin("adveritae");
-        badUser.setBirthday(LocalDate.now().plusDays(25));
-        ResponseEntity<String> bornInFuture = controller.create(badUser);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, bornInFuture.getStatusCode());
     }
 
     @Test
