@@ -19,6 +19,6 @@ public class Film extends IdHolder{
     private String description;
     @DateValidation
     private LocalDate releaseDate;
-    @PositiveDuration
+    @PositiveDuration(message = "не может быть отрицательна или равна нулю")
     private Duration duration;
 }

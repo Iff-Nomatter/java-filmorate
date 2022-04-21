@@ -12,6 +12,7 @@ import java.time.LocalDate;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class User extends IdHolder {
+    @NotBlank
     @Email
     private String email;
     @NotBlank

@@ -9,6 +9,6 @@ import java.time.Duration;
 public class DurationValidator implements ConstraintValidator<PositiveDuration, Duration> {
     @Override
     public boolean isValid(Duration duration, ConstraintValidatorContext constraintValidatorContext) {
-        return !duration.isNegative();
+        return !duration.isNegative() && !duration.isZero();
     }
 }

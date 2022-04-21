@@ -16,7 +16,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Constraint(validatedBy = DateValidator.class)
 @Documented
 public @interface DateValidation {
-    String message() default "не может быть раньше 28.12.1985";
+    String message() default "не может быть раньше 27.12.1985";
 
     Class<?>[] groups() default { };
 

@@ -3,22 +3,46 @@ package ru.yandex.practicum.filmorate.controllers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.Assert;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
+@SpringBootTest(webEnvironment = RANDOM_PORT)
 class UserControllerTest {
 
-    UserController controller = new UserController();
+    private static final String ADDRESS = "http://localhost:";
+    private static final String ENDPOINT = "/users";
+
+    @LocalServerPort
+    private int port;
+
+    @Autowired
+    private TestRestTemplate restTemplate;
+
+    @Autowired
+    private UserController controller;
     static User user;
     static User updatedUser;
+    static User badUser;
+    static URI url;
 
     @BeforeEach
     void init() {
+        url = URI.create(ADDRESS + port + ENDPOINT);
+
         user = new User();
         user.setEmail("mail@mail.ru");
         user.setLogin("nagibator");
@@ -32,32 +56,98 @@ class UserControllerTest {
         updatedUser.setName("Pyotr");
         updatedUser.setBirthday(LocalDate.of(1980, 10, 15));
 
-        controller.create(user);
+        badUser = new User();
+        badUser.setEmail("e@mail.com");
+        badUser.setLogin("adveritae");
+        badUser.setBirthday(LocalDate.of(1990, 1, 5));
     }
 
     @Test
     void shouldReturnUserList() {
-        Assert.notEmpty(controller.getAll(), "Вернулся пустой список, так быть не должно!");
+        restTemplate.postForObject(url, user, String.class);
+        assertThat(this.restTemplate.getForObject(url, List.class)).isNotEmpty();
     }
 
     @Test
     void shouldCreateUser() {
-        user.setId(0);
-        user.setLogin("KirovReporting");
-        Assertions.assertEquals(ResponseEntity.ok("verified"), controller.create(user));
+        ResponseEntity<String> response = restTemplate.postForEntity(url, user, String.class);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
     void shouldUpdateUser() {
-        controller.update(updatedUser);
-        List<User> userList = controller.getAll();
-        User checkUser = null;
-        for (User user1 : userList) {
-            if (user1.equals(updatedUser)) {
-                checkUser = user1;
-            }
-        }
-        Assertions.assertNotNull(checkUser);
+        restTemplate.postForObject(url, user, String.class);
+        HttpEntity<User> updatedUserRequest = new HttpEntity<>(updatedUser);
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT,
+                updatedUserRequest, String.class);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void shouldReturn500WhenIdPresentOnCreate() {
+        badUser.setId(2);
+        ResponseEntity<String> response = restTemplate.postForEntity(url, badUser, String.class);
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
+
+    @Test
+    void shouldReturn500WhenNoIdInDatabaseOnUpdate() {
+        badUser.setId(197);
+        HttpEntity<User> badUpdateRequest = new HttpEntity<>(badUser);
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT,
+                badUpdateRequest, String.class);
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
+
+    @Test
+    void shouldReturn500WhenNoIdOnUpdate() {
+        badUser.setId(0);
+        HttpEntity<User> badUpdateRequest = new HttpEntity<>(badUser);
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT,
+                badUpdateRequest, String.class);
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
+
+    @Test
+    void shouldReturn500WhenEmailIsEmptyOnCreate() {
+        badUser.setEmail("");
+        ResponseEntity<String> response = restTemplate.postForEntity(url, badUser, String.class);
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
+
+    @Test
+    void shouldReturn500WhenEmailInWrongFormatOnCreate() {
+        badUser.setEmail("@meil.e");
+        ResponseEntity<String> response = restTemplate.postForEntity(url, badUser, String.class);
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
+
+    @Test
+    void shouldReturn500WhenEmptyLoginOnCreate() {
+        badUser.setLogin("");
+        ResponseEntity<String> response = restTemplate.postForEntity(url, badUser, String.class);
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
+
+    @Test
+    void shouldReturn500WhenLoginContainsWhitespaceOnCreate() {
+        badUser.setLogin("ad veritae");
+        ResponseEntity<String> response = restTemplate.postForEntity(url, badUser, String.class);
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
+
+    @Test
+    void shouldReturn500WhenBornInFutureOnCreate() {
+        badUser.setBirthday(LocalDate.now().plusDays(25));
+        ResponseEntity<String> response = restTemplate.postForEntity(url, badUser, String.class);
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
+
+    @Test
+    void shouldReturn500WhenJustBorn() {
+        badUser.setBirthday(LocalDate.now());
+        ResponseEntity<String> response = restTemplate.postForEntity(url, badUser, String.class);
+        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
@@ -67,8 +157,16 @@ class UserControllerTest {
         namelessUser.setLogin("ihavenoname");
         namelessUser.setName("");
         namelessUser.setBirthday(LocalDate.of(1995, 3, 20));
-
-        controller.create(namelessUser);
-        Assertions.assertEquals(namelessUser.getLogin(), namelessUser.getName());
+        restTemplate.postForObject(url, namelessUser, String.class); //добавляем namelessUser
+        User[] returned = restTemplate.getForObject(url, User[].class); //получаем массив User
+        User returnedUser = null;
+        //итерируемся по массиву, пока не найдем namelessUser
+        for (User user1 : returned) {
+            if (user1.getLogin().equals(namelessUser.getLogin())) {
+                returnedUser = user1;
+            }
+        }
+        Assertions.assertNotNull(returnedUser); //проверяем, что вообще нашли его
+        Assertions.assertEquals(returnedUser.getLogin(), returnedUser.getName()); //сверяем имя и логин
     }
 }

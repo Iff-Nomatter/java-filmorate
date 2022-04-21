@@ -42,7 +42,8 @@ public abstract class Controller<T extends IdHolder> {
     }
 
     @PutMapping
-    public void update(@Valid @RequestBody T entry) {
+    public ResponseEntity<String> update(@Valid @RequestBody T entry) {
+        log.debug(String.valueOf(entry));
         if (entry.getId() == 0) {
             throw new ValidationException("Для обновления записи нужен id!");
         }
@@ -50,6 +51,7 @@ public abstract class Controller<T extends IdHolder> {
             throw new ValidationException("Отсутствует запись для обновления!");
         }
         updateParameters(entry);
+        return ResponseEntity.ok("verified");
     }
 
     //обновляет параметры объекта из переданного объекта
