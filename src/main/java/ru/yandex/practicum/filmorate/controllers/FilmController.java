@@ -51,9 +51,10 @@ public class FilmController {
     }
 
     @PutMapping
-    public void update(@Valid @RequestBody Film film) {
+    public ResponseEntity<Film> update(@Valid @RequestBody Film film) {
         filmService.updateFilm(film);
         log.info("Обновлен фильм: " + film);
+        return ResponseEntity.ok(film);
     }
 
     @PutMapping("/{id}/like/{userId}")

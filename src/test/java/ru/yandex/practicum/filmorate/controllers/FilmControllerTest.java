@@ -15,7 +15,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.net.URI;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -51,20 +50,20 @@ class FilmControllerTest {
         film.setName("War of the Worlds");
         film.setDescription("Film about alien invasion");
         film.setReleaseDate(LocalDate.of(2005, 6, 29));
-        film.setDuration(Duration.ofMinutes(110));
+        film.setDuration(110);
 
         updatedFilm = new Film();
         updatedFilm.setId(1);
         updatedFilm.setName("War of the Worlds with Tom Cruise");
         updatedFilm.setDescription("Film about alien invasion");
         updatedFilm.setReleaseDate(LocalDate.of(2005, 6, 29));
-        updatedFilm.setDuration(Duration.ofMinutes(116));
+        updatedFilm.setDuration(116);
 
         badFilm = new Film();
         badFilm.setName("name");
         badFilm.setDescription("description");
         badFilm.setReleaseDate(LocalDate.of(2021, 1, 1));
-        badFilm.setDuration(Duration.ofMinutes(30));
+        badFilm.setDuration(30);
 
         theOneWhoLikes = new User();
         theOneWhoLikes.setEmail("mail@mail.ru");
@@ -197,14 +196,14 @@ class FilmControllerTest {
 
     @Test
     void shouldReturn500WhenDurationIsZero() {
-        badFilm.setDuration(Duration.ofMinutes(0));
+        badFilm.setDuration(0);
         ResponseEntity<String> response = restTemplate.postForEntity(url, badFilm, String.class);
         Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
     void shouldReturn500WhenNegativeDuration() {
-        badFilm.setDuration(Duration.ofMinutes(-30));
+        badFilm.setDuration(-30);
         ResponseEntity<String> response = restTemplate.postForEntity(url, badFilm, String.class);
         Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
