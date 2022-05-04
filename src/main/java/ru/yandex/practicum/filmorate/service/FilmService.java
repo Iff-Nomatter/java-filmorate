@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
@@ -20,6 +21,22 @@ public class FilmService {
     public FilmService(FilmStorage storage, UserStorage userStorage) {
         this.storage = storage;
         this.userStorage = userStorage;
+    }
+
+    public void addFilm(Film film) {
+        storage.addFilm(film);
+    }
+
+    public List<Film> getAllFilms() {
+        return storage.getAllFilms();
+    }
+
+    public Film getFilmById(int id) {
+        return storage.getFilmById(id);
+    }
+
+    public void updateFilm(Film film) {
+        storage.updateFilm(film);
     }
 
     public void addLike(int filmId, int userId) {
@@ -43,15 +60,10 @@ public class FilmService {
         if (count == null || count <= 0) {
             count = 10;
         }
-        List<Film> allFilms = storage.getAllFilms();
-        allFilms.sort((o1, o2) -> {
-            int a = o1.getLikeSet().size();
-            int b = o2.getLikeSet().size();
-            return Integer.compare(b, a);
-        });
-        if (allFilms.size() < count) {
-            count = allFilms.size();
-        }
-        return allFilms.subList(0, count);
+        Comparator<Film> likeAmountComparator = Comparator.comparingInt(o -> o.getLikeSet().size());
+        return storage.getAllFilms().stream()
+                .sorted(likeAmountComparator.reversed())
+                .limit(count)
+                .collect(Collectors.toList());
     }
 }

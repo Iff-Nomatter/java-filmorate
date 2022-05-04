@@ -17,17 +17,15 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
-    private final UserStorage userStorage;
 
     @Autowired
-    public UserController(UserService userService, UserStorage userStorage) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.userStorage = userStorage;
     }
 
     @GetMapping
     public List<User> getAll() {
-        List<User> allUsers = new ArrayList<>(userStorage.getAllUsers());
+        List<User> allUsers = new ArrayList<>(userService.getAllUsers());
         log.info("Пользователей в базе: {}", allUsers.size());
         return allUsers;
     }
@@ -35,7 +33,7 @@ public class UserController {
     @GetMapping("/{id}")
     public User getUser(@PathVariable int id) {
         log.info("Запрошен пользователь id: " + id);
-        return userStorage.getUserById(id);
+        return userService.getUserById(id);
     }
 
     @GetMapping("/{id}/friends")
@@ -53,14 +51,14 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<User> create(@Valid @RequestBody User user) {
-        userStorage.addUser(user);
+        userService.addUser(user);
         log.info("Новый пользователь: " + user);
         return ResponseEntity.ok(user);
     }
 
     @PutMapping
     public void update(@Valid @RequestBody User user) {
-        userStorage.updateUser(user);
+        userService.updateUser(user);
         log.info("Обновлен пользователь: " + user);
     }
 

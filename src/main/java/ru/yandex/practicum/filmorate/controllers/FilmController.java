@@ -17,17 +17,15 @@ import java.util.List;
 @RequestMapping("/films")
 public class FilmController {
     private final FilmService filmService;
-    private final FilmStorage filmStorage;
 
     @Autowired
-    public FilmController(FilmService filmService, FilmStorage filmStorage) {
+    public FilmController(FilmService filmService) {
         this.filmService = filmService;
-        this.filmStorage = filmStorage;
     }
 
     @GetMapping
     public List<Film> getAll() {
-        List<Film> allFilms = new ArrayList<>(filmStorage.getAllFilms());
+        List<Film> allFilms = new ArrayList<>(filmService.getAllFilms());
         log.info("Фильмов в базе: {}", allFilms.size());
         return allFilms;
     }
@@ -35,7 +33,7 @@ public class FilmController {
     @GetMapping("/{id}")
     public Film getFilm(@PathVariable int id) {
         log.info("Запрошен фильм id: " + id);
-        return filmStorage.getFilmById(id);
+        return filmService.getFilmById(id);
     }
 
     @GetMapping("/popular")
@@ -47,14 +45,14 @@ public class FilmController {
 
     @PostMapping
     public ResponseEntity<Film> create(@Valid @RequestBody Film film) {
-        filmStorage.addFilm(film);
+        filmService.addFilm(film);
         log.info("Новый фильм: " + film);
         return ResponseEntity.ok(film);
     }
 
     @PutMapping
     public void update(@Valid @RequestBody Film film) {
-        filmStorage.updateFilm(film);
+        filmService.updateFilm(film);
         log.info("Обновлен фильм: " + film);
     }
 
