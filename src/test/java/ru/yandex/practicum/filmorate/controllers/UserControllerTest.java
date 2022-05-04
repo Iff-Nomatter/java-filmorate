@@ -35,6 +35,7 @@ class UserControllerTest {
     @Autowired
     private UserController controller;
     static User user;
+    static User friendUser;
     static User updatedUser;
     static User badUser;
     static URI url;
@@ -48,6 +49,12 @@ class UserControllerTest {
         user.setLogin("nagibator");
         user.setName("Pyotr");
         user.setBirthday(LocalDate.of(1980, 10, 15));
+
+        friendUser = new User();
+        friendUser.setEmail("y@ndex.ru");
+        friendUser.setLogin("imafriend");
+        friendUser.setName("friendlyname");
+        friendUser.setBirthday(LocalDate.of(1984, 3, 10));
 
         updatedUser = new User();
         updatedUser.setId(1);
@@ -84,6 +91,58 @@ class UserControllerTest {
     }
 
     @Test
+    void shouldAddToFriends() {
+        restTemplate.postForObject(url, user, String.class);
+        restTemplate.postForObject(url, friendUser, String.class);
+        ResponseEntity<String> response = restTemplate.exchange(url + "/1/friends/2",
+                HttpMethod.PUT, new HttpEntity<>(null), String.class);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void shouldDeleteFromFriends() {
+        restTemplate.postForObject(url, user, String.class);
+        restTemplate.postForObject(url, friendUser, String.class);
+        restTemplate.exchange(url + "/1/friends/2",
+                HttpMethod.PUT, new HttpEntity<>(null), String.class);
+        ResponseEntity<String> response = restTemplate.exchange(url + "/1/friends/2",
+                HttpMethod.DELETE, new HttpEntity<>(null), String.class);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void shouldReturnFriendList() {
+        restTemplate.postForObject(url, user, String.class);
+        restTemplate.postForObject(url, friendUser, String.class);
+        restTemplate.exchange(url + "/1/friends/2",
+                HttpMethod.PUT, new HttpEntity<>(null), String.class);
+        assertThat(this.restTemplate.getForObject(url + "/1/friends", List.class)).isNotEmpty();
+    }
+
+    @Test
+    void shouldReturnCommonFriendList() {
+        restTemplate.postForObject(url, user, String.class);
+        restTemplate.postForObject(url, friendUser, String.class);
+        restTemplate.postForObject(url, friendUser, String.class);
+        restTemplate.exchange(url + "/1/friends/2",
+                HttpMethod.PUT, new HttpEntity<>(null), String.class);
+        restTemplate.exchange(url + "/3/friends/2",
+                HttpMethod.PUT, new HttpEntity<>(null), String.class);
+        assertThat(this.restTemplate.getForObject(url + "/1/friends/common/3",
+                List.class)).isNotEmpty();
+    }
+
+    @Test
+    void shouldProveCrissCrossFriends() {
+        restTemplate.postForObject(url, user, String.class);
+        restTemplate.postForObject(url, friendUser, String.class);
+        restTemplate.exchange(url + "/1/friends/2",
+                HttpMethod.PUT, new HttpEntity<>(null), String.class);
+        assertThat(this.restTemplate.getForObject(url + "/1/friends", List.class)).isNotEmpty();
+        assertThat(this.restTemplate.getForObject(url + "/2/friends", List.class)).isNotEmpty();
+    }
+
+    @Test
     void shouldReturn500WhenIdPresentOnCreate() {
         badUser.setId(2);
         ResponseEntity<String> response = restTemplate.postForEntity(url, badUser, String.class);
@@ -91,21 +150,21 @@ class UserControllerTest {
     }
 
     @Test
-    void shouldReturn500WhenNoIdInDatabaseOnUpdate() {
+    void shouldReturn404WhenNoIdInDatabaseOnUpdate() {
         badUser.setId(197);
         HttpEntity<User> badUpdateRequest = new HttpEntity<>(badUser);
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT,
                 badUpdateRequest, String.class);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
-    void shouldReturn500WhenNoIdOnUpdate() {
+    void shouldReturn404WhenNoIdOnUpdate() {
         badUser.setId(0);
         HttpEntity<User> badUpdateRequest = new HttpEntity<>(badUser);
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT,
                 badUpdateRequest, String.class);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test

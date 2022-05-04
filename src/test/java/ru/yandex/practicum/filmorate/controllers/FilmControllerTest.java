@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.controllers;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,9 +12,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.net.URI;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -40,6 +39,7 @@ class FilmControllerTest {
     static Film film;
     static Film updatedFilm;
     static Film badFilm;
+    static User theOneWhoLikes;
     static URI url;
 
     @BeforeEach
@@ -50,20 +50,26 @@ class FilmControllerTest {
         film.setName("War of the Worlds");
         film.setDescription("Film about alien invasion");
         film.setReleaseDate(LocalDate.of(2005, 6, 29));
-        film.setDuration(Duration.ofMinutes(110));
+        film.setDuration(110);
 
         updatedFilm = new Film();
         updatedFilm.setId(1);
         updatedFilm.setName("War of the Worlds with Tom Cruise");
         updatedFilm.setDescription("Film about alien invasion");
         updatedFilm.setReleaseDate(LocalDate.of(2005, 6, 29));
-        updatedFilm.setDuration(Duration.ofMinutes(116));
+        updatedFilm.setDuration(116);
 
         badFilm = new Film();
         badFilm.setName("name");
         badFilm.setDescription("description");
         badFilm.setReleaseDate(LocalDate.of(2021, 1, 1));
-        badFilm.setDuration(Duration.ofMinutes(30));
+        badFilm.setDuration(30);
+
+        theOneWhoLikes = new User();
+        theOneWhoLikes.setEmail("mail@mail.ru");
+        theOneWhoLikes.setLogin("nagibator");
+        theOneWhoLikes.setName("Pyotr");
+        theOneWhoLikes.setBirthday(LocalDate.of(1980, 10, 15));
     }
 
     @Test
@@ -88,6 +94,36 @@ class FilmControllerTest {
     }
 
     @Test
+    void shouldPutLike() {
+        restTemplate.postForObject(ADDRESS + port + "/users", theOneWhoLikes, String.class);
+        restTemplate.postForEntity(url, film, String.class);
+        ResponseEntity<String> response = restTemplate.exchange(url + "/1/like/1", HttpMethod.PUT,
+                new HttpEntity<>(null), String.class);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void shouldDeleteLike() {
+        restTemplate.postForObject(ADDRESS + port + "/users", theOneWhoLikes, String.class);
+        restTemplate.postForEntity(url, film, String.class);
+        restTemplate.exchange(url + "/1/like/1", HttpMethod.PUT,
+                new HttpEntity<>(null), String.class);
+        ResponseEntity<String> response = restTemplate.exchange(url + "/1/like/1", HttpMethod.DELETE,
+                new HttpEntity<>(null), String.class);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    void shouldReturnTopFilms() {
+        restTemplate.postForObject(ADDRESS + port + "/users", theOneWhoLikes, String.class);
+        restTemplate.postForEntity(url, film, String.class);
+        restTemplate.exchange(url + "/1/like/1", HttpMethod.PUT,
+                new HttpEntity<>(null), String.class);
+
+        assertThat(this.restTemplate.getForObject(url + "/popular", List.class)).isNotEmpty();
+    }
+
+    @Test
     void shouldReturn500WhenIdPresentOnCreate() {
         badFilm.setId(15);
         ResponseEntity<String> response = restTemplate.postForEntity(url, badFilm, String.class);
@@ -95,21 +131,21 @@ class FilmControllerTest {
     }
 
     @Test
-    void shouldReturn500WhenNoIdInDatabaseOnUpdate() {
+    void shouldReturn404WhenNoIdInDatabaseOnUpdate() {
         badFilm.setId(197);
         HttpEntity<Film> badUpdateRequest = new HttpEntity<>(badFilm);
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT,
                 badUpdateRequest, String.class);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
-    void shouldReturn500WhenNoIdOnUpdate() {
+    void shouldReturn404WhenNoIdOnUpdate() {
         badFilm.setId(0);
         HttpEntity<Film> badUpdateRequest = new HttpEntity<>(badFilm);
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT,
                 badUpdateRequest, String.class);
-        Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
@@ -120,8 +156,8 @@ class FilmControllerTest {
     }
 
     @Test
-    void shouldReturn200WhenNoDescription() {
-        badFilm.setDescription("");
+    void shouldReturn200WhenDescription1CharacterLong() {
+        badFilm.setDescription("1");
         ResponseEntity<String> response = restTemplate.postForEntity(url, badFilm, String.class);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     }
@@ -160,14 +196,14 @@ class FilmControllerTest {
 
     @Test
     void shouldReturn500WhenDurationIsZero() {
-        badFilm.setDuration(Duration.ofMinutes(0));
+        badFilm.setDuration(0);
         ResponseEntity<String> response = restTemplate.postForEntity(url, badFilm, String.class);
         Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 
     @Test
     void shouldReturn500WhenNegativeDuration() {
-        badFilm.setDuration(Duration.ofMinutes(-30));
+        badFilm.setDuration(-30);
         ResponseEntity<String> response = restTemplate.postForEntity(url, badFilm, String.class);
         Assertions.assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
