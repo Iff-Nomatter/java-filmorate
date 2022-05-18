@@ -15,6 +15,8 @@ public class InMemoryFilmStorage extends InMemoryStorage<Film> implements FilmSt
         filmToUpdate.setDescription(film.getDescription());
         filmToUpdate.setReleaseDate(film.getReleaseDate());
         filmToUpdate.setDuration(film.getDuration());
+        filmToUpdate.setGenre(film.getGenre());
+        filmToUpdate.setRating(film.getRating());
     }
 
     @Override

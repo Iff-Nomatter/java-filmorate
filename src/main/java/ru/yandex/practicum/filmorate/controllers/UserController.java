@@ -57,9 +57,10 @@ public class UserController {
     }
 
     @PutMapping
-    public void update(@Valid @RequestBody User user) {
+    public ResponseEntity<User> update(@Valid @RequestBody User user) {
         userService.updateUser(user);
         log.info("Обновлен пользователь: " + user);
+        return ResponseEntity.ok(user);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
