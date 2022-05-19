@@ -9,6 +9,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
@@ -22,5 +23,9 @@ public class Film extends IdHolder{
     private LocalDate releaseDate;
     @Min(value = 1, message = "не может быть отрицательна или равна нулю")
     private int duration;
+    private List<String> genre;
+    private FilmRating rating;
     private Set<Integer> likeSet = new HashSet<>();
+    //операции с полями рейтинга и жанра на данный момент не реализованы,
+    //поскольку в ТЗ не была указана такая необходимость
 }
