@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class InMemoryFilmStorage extends InMemoryStorage<Film> implements FilmStorage {
@@ -16,7 +17,7 @@ public class InMemoryFilmStorage extends InMemoryStorage<Film> implements FilmSt
         filmToUpdate.setReleaseDate(film.getReleaseDate());
         filmToUpdate.setDuration(film.getDuration());
         filmToUpdate.setGenre(film.getGenre());
-        filmToUpdate.setRating(film.getRating());
+        filmToUpdate.setMpa(film.getMpa());
     }
 
     @Override
@@ -30,8 +31,13 @@ public class InMemoryFilmStorage extends InMemoryStorage<Film> implements FilmSt
     }
 
     @Override
-    public void deleteFilm(int id) {
-        deleteEntry(id);
+    public void addLike(Film film, int userId) {
+        film.getLikeSet().add(userId);
+    }
+
+    @Override
+    public void deleteLike(Film film, int userId) {
+        film.getLikeSet().remove(userId);
     }
 
     @Override

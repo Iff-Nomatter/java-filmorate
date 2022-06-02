@@ -1,9 +1,11 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.EntryNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -18,7 +20,8 @@ public class FilmService {
     private final UserStorage userStorage;
 
     @Autowired
-    public FilmService(FilmStorage storage, UserStorage userStorage) {
+    public FilmService(@Qualifier("filmDbStorage")FilmStorage storage,
+                       @Qualifier("userDbStorage") UserStorage userStorage) {
         this.storage = storage;
         this.userStorage = userStorage;
     }
@@ -40,20 +43,18 @@ public class FilmService {
     }
 
     public void addLike(int filmId, int userId) {
-        try {
-            userStorage.getUserById(userId);
-        } catch (EntryNotFoundException exception) {
-            throw new EntryNotFoundException("Не найден пользователь с id: " + userId);
-        }
-        storage.getFilmById(filmId).getLikeSet().add(userId);
+        userStorage.getUserById(userId);
+        Film film = storage.getFilmById(filmId);
+        storage.addLike(film, userId);
     }
 
     public void deleteLike(int filmId, int userId) {
-        Set<Integer> filmLikeSet = storage.getFilmById(filmId).getLikeSet();
+        Film film = storage.getFilmById(filmId);
+        Set<Integer> filmLikeSet = film.getLikeSet();
         if (!filmLikeSet.contains(userId)) {
             throw new EntryNotFoundException("Пользователь с id: " + userId + " не ставил лайк этому фильму!");
         }
-        filmLikeSet.remove(userId);
+        storage.deleteLike(film, userId);
     }
     
     public List<Film> getTopByLikes(Integer count) {

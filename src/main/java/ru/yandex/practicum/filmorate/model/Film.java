@@ -5,8 +5,10 @@ import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Length;
 import ru.yandex.practicum.filmorate.annotations.DateValidation;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
@@ -24,7 +26,9 @@ public class Film extends IdHolder{
     @Min(value = 1, message = "не может быть отрицательна или равна нулю")
     private int duration;
     private List<String> genre;
-    private FilmRating rating;
+    @Valid
+    @NotNull
+    private FilmRating mpa;
     private Set<Integer> likeSet = new HashSet<>();
     //операции с полями рейтинга и жанра на данный момент не реализованы,
     //поскольку в ТЗ не была указана такая необходимость

@@ -1,9 +1,14 @@
 package ru.yandex.practicum.filmorate.model;
 
-public enum FilmRating {
-    G,
-    PG,
-    PG13,
-    R,
-    NC17
+import lombok.Data;
+
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
+
+@Data
+public class FilmRating {
+    @Positive
+    @NotNull
+    private int id;
+    private String rating;
 }

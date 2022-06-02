@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.EntryNotFoundException;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -13,10 +13,11 @@ import java.util.Map;
 
 @Service
 public class UserService {
+
     private final UserStorage storage;
 
     @Autowired
-    public UserService(UserStorage storage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage storage) {
         this.storage = storage;
     }
 
@@ -37,22 +38,15 @@ public class UserService {
     }
 
     public void addToFriends(int userId, int friendId) {
-        User user = storage.getUserById(userId);
-        User addedUser = storage.getUserById(friendId);
-        user.getFriendSet().put(friendId, FriendshipStatus.PENDING);
-        addedUser.getFriendSet().put(userId, FriendshipStatus.PENDING);
+        User user = getUserById(userId);
+        User addedUser = getUserById(friendId);
+        storage.addToFriends(user, addedUser);
     }
 
     public void deleteFromFriends(int userId, int friendId) {
-        User user = storage.getUserById(userId);
-        User friendUser = storage.getUserById(friendId);
-        Map<Integer, FriendshipStatus> userFriendSet = user.getFriendSet();
-        Map<Integer, FriendshipStatus> friendUserFriendSet = friendUser.getFriendSet();
-        if (!userFriendSet.containsKey(friendId) || !friendUserFriendSet.containsKey(userId)) {
-            throw new EntryNotFoundException("Пользователь с этим id не найден в списке друзей!");
-        }
-        storage.getUserById(userId).getFriendSet().remove(friendId);
-        storage.getUserById(friendId).getFriendSet().remove(userId);
+        User user = getUserById(userId);
+        User friendUser = getUserById(friendId);
+        storage.deleteFromFriends(user, friendUser);
     }
 
     public List<User> getFriendsList (int userId) {
