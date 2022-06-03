@@ -19,7 +19,7 @@ import java.time.LocalDate;
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-class FilmoRateApplicationTests {
+class FilmorateApplicationTests {
 	private final UserDbStorage userStorage;
 	private final FilmDbStorage filmStorage;
 
@@ -87,7 +87,7 @@ class FilmoRateApplicationTests {
 		newFilmForUpdate.setReleaseDate(LocalDate.of(1995, 9, 25));
 		FilmRating mpa = new FilmRating();
 		mpa.setId(3);
-		mpa.setRating("PG-13");
+		mpa.setName("PG-13");
 		newFilmForUpdate.setMpa(mpa);
 		filmStorage.updateFilm(newFilmForUpdate);
 

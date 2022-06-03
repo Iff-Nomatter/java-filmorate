@@ -2,7 +2,10 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.EntryNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -22,11 +25,19 @@ public class UserService {
     }
 
     public void addUser(User user) {
-        storage.addUser(user);
+        try {
+            storage.addUser(user);
+        } catch (NullPointerException e){
+            throw new EntryNotFoundException("Что-то пошло не так в базе данных.");
+        }
     }
 
     public void updateUser(User user) {
-        storage.updateUser(user);
+        try {
+            storage.updateUser(user);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntryNotFoundException("В базе отсутствует запись c id: " + user.getId());
+        }
     }
 
     public List<User> getAllUsers() {
@@ -34,18 +45,30 @@ public class UserService {
     }
 
     public User getUserById(int id) {
-        return storage.getUserById(id);
+        try {
+            return storage.getUserById(id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntryNotFoundException("В базе отсутствует запись c id: " + id);
+        } catch (NullPointerException e) {
+            throw new EntryNotFoundException("Что-то пошло не так в базе данных.");
+        }
     }
 
     public void addToFriends(int userId, int friendId) {
         User user = getUserById(userId);
         User addedUser = getUserById(friendId);
+        if (user.getFriendSet().containsKey(addedUser.getId())) {
+            throw new ValidationException("Этот пользователь уже в друзьях!");
+        }
         storage.addToFriends(user, addedUser);
     }
 
     public void deleteFromFriends(int userId, int friendId) {
         User user = getUserById(userId);
         User friendUser = getUserById(friendId);
+        if (!user.getFriendSet().containsKey(friendId)) {
+            throw new EntryNotFoundException("Пользователь с этим id не найден в списке друзей!");
+        }
         storage.deleteFromFriends(user, friendUser);
     }
 
