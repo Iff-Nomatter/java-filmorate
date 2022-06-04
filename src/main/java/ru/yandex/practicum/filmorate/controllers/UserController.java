@@ -36,6 +36,7 @@ public class UserController {
         return userService.getUserById(id);
     }
 
+
     @GetMapping("/{id}/friends")
     public List<User> getFriends(@PathVariable int id) {
         log.info("Запрошен список друзей пользователя id: " + id);

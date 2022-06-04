@@ -1,8 +1,11 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.EntryNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -13,19 +16,28 @@ import java.util.Map;
 
 @Service
 public class UserService {
+
     private final UserStorage storage;
 
     @Autowired
-    public UserService(UserStorage storage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage storage) {
         this.storage = storage;
     }
 
     public void addUser(User user) {
-        storage.addUser(user);
+        try {
+            storage.addUser(user);
+        } catch (NullPointerException e){
+            throw new EntryNotFoundException("Что-то пошло не так в базе данных.");
+        }
     }
 
     public void updateUser(User user) {
-        storage.updateUser(user);
+        try {
+            storage.updateUser(user);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntryNotFoundException("В базе отсутствует запись c id: " + user.getId());
+        }
     }
 
     public List<User> getAllUsers() {
@@ -33,26 +45,31 @@ public class UserService {
     }
 
     public User getUserById(int id) {
-        return storage.getUserById(id);
+        try {
+            return storage.getUserById(id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntryNotFoundException("В базе отсутствует запись c id: " + id);
+        } catch (NullPointerException e) {
+            throw new EntryNotFoundException("Что-то пошло не так в базе данных.");
+        }
     }
 
     public void addToFriends(int userId, int friendId) {
-        User user = storage.getUserById(userId);
-        User addedUser = storage.getUserById(friendId);
-        user.getFriendSet().put(friendId, FriendshipStatus.PENDING);
-        addedUser.getFriendSet().put(userId, FriendshipStatus.PENDING);
+        User user = getUserById(userId);
+        User addedUser = getUserById(friendId);
+        if (user.getFriendSet().containsKey(addedUser.getId())) {
+            throw new ValidationException("Этот пользователь уже в друзьях!");
+        }
+        storage.addToFriends(user, addedUser);
     }
 
     public void deleteFromFriends(int userId, int friendId) {
-        User user = storage.getUserById(userId);
-        User friendUser = storage.getUserById(friendId);
-        Map<Integer, FriendshipStatus> userFriendSet = user.getFriendSet();
-        Map<Integer, FriendshipStatus> friendUserFriendSet = friendUser.getFriendSet();
-        if (!userFriendSet.containsKey(friendId) || !friendUserFriendSet.containsKey(userId)) {
+        User user = getUserById(userId);
+        User friendUser = getUserById(friendId);
+        if (!user.getFriendSet().containsKey(friendId)) {
             throw new EntryNotFoundException("Пользователь с этим id не найден в списке друзей!");
         }
-        storage.getUserById(userId).getFriendSet().remove(friendId);
-        storage.getUserById(friendId).getFriendSet().remove(userId);
+        storage.deleteFromFriends(user, friendUser);
     }
 
     public List<User> getFriendsList (int userId) {

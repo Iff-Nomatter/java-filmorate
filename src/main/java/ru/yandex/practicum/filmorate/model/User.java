@@ -24,6 +24,4 @@ public class User extends IdHolder {
     @Past
     private LocalDate birthday;
     private Map<Integer, FriendshipStatus> friendSet = new HashMap<>();
-    //смена статуса дружбы на данный момент не реализована,
-    //поскольку в ТЗ не указана такая необходимость
 }
