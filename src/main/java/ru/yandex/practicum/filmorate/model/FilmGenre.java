@@ -5,5 +5,5 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class FilmGenre extends FilmProperty {
+public class FilmGenre extends FilmParameter {
 }

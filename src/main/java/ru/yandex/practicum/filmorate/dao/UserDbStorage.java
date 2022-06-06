@@ -40,7 +40,6 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void addUser(User user) {
-        applyLoginToName(user);
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection
@@ -67,7 +66,6 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void updateUser(User user) {
-        applyLoginToName(user);
         getUserById(user.getId()); //проверка на наличие записи в базе
         jdbcTemplate.update(USER_UPDATE,
                 user.getName(),
@@ -130,11 +128,5 @@ public class UserDbStorage implements UserStorage {
                     FriendshipStatus.valueOf(userFriends.getString("FRIENDSHIP_STATUS")));
         }
         user.setFriendSet(friendSet);
-    }
-
-    private void applyLoginToName(User user) {
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
     }
 }

@@ -25,6 +25,7 @@ public class UserService {
     }
 
     public void addUser(User user) {
+        applyLoginToName(user);
         try {
             storage.addUser(user);
         } catch (NullPointerException e){
@@ -33,6 +34,7 @@ public class UserService {
     }
 
     public void updateUser(User user) {
+        applyLoginToName(user);
         try {
             storage.updateUser(user);
         } catch (EmptyResultDataAccessException e) {
@@ -94,5 +96,11 @@ public class UserService {
             }
         }
         return commonFriends;
+    }
+
+    private void applyLoginToName(User user) {
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
     }
 }
