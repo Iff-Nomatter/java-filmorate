@@ -35,8 +35,7 @@ public class FilmDbStorage implements FilmStorage {
     final String FILM_GENRE_YEAR_FILTER_REQUEST = "SELECT f.* FROM film AS f " +
             "JOIN film_genre AS fg ON f.film_id = fg.film_id " +
             "JOIN genre AS g ON fg.genre_id = g.genre_id " +
-            "WHERE g.genre = ? AND EXTRACT(YEAR FROM release_date::date) = ?" +
-            "LIMIT ?";
+            "WHERE g.genre = ? AND EXTRACT(YEAR FROM release_date::date) = ?";
     final String FILM_LIKES_REQUEST = "SELECT * FROM FILM_LIKE WHERE FILM_ID = ?";
     final String FILM_RATING_REQUEST = "SELECT * FROM FILM_RATING WHERE RATING_ID = ?";
     final String FILM_GENRE_REQUEST = "select G.* from FILM_GENRE as FG inner join GENRE as G " +

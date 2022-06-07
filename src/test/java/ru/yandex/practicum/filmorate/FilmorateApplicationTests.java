@@ -23,7 +23,6 @@ class FilmorateApplicationTests {
 	private final UserDbStorage userStorage;
 	private final FilmDbStorage filmStorage;
 
-
 	@Test
 	public void testFindUserById() {
 		User user = userStorage.getUserById(1);
@@ -114,6 +113,43 @@ class FilmorateApplicationTests {
 		filmStorage.deleteLike(film, 2);
 		film = filmStorage.getFilmById(1);
 		Assertions.assertFalse(film.getLikeSet().contains(2));
+	}
+
+	@Test
+	public void testGetPopularFilms() {
+		//получаем фильмы
+		Film filmFirst = filmStorage.getFilmById(1);
+		Film filmSecond = filmStorage.getFilmById(2);
+		//обнуляем лайки
+		filmStorage.deleteLike(filmFirst,1);
+		filmStorage.deleteLike(filmFirst,2);
+		filmStorage.deleteLike(filmSecond,1);
+		filmStorage.deleteLike(filmSecond,2);
+		//ставим лайки
+		filmStorage.addLike(filmFirst, 1);
+		filmStorage.addLike(filmFirst, 2);
+		filmStorage.addLike(filmSecond, 1);
+		//инициализируем параметры
+		Integer limit = 10;
+		String genre = null;
+		Integer year = null;
+		//выводим без фильтров
+		Assertions.assertEquals(3, filmStorage.getPopular(limit, genre, year).size());
+		Assertions.assertEquals(1, filmStorage.getPopular(limit, genre, year).get(0).getId());
+		//выводим с фильтром по году
+		year = 1991;
+		Assertions.assertEquals(2, filmStorage.getPopular(limit, genre, year).size());
+		Assertions.assertEquals(2, filmStorage.getPopular(limit, genre, year).get(0).getId());
+		//выводим с фильтром по жанру
+		year = null;
+		genre = "Gangster movie";
+		Assertions.assertEquals(2, filmStorage.getPopular(limit, genre, year).size());
+		Assertions.assertEquals(1, filmStorage.getPopular(limit, genre, year).get(0).getId());
+		//выводим с филтрами по жанру и по году
+		year = 1991;
+		genre = "Gangster movie";
+		Assertions.assertEquals(1, filmStorage.getPopular(limit, genre, year).size());
+		Assertions.assertEquals(3, filmStorage.getPopular(limit, genre, year).get(0).getId());
 	}
 
 	@Test
