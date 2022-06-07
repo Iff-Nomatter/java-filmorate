@@ -40,6 +40,11 @@ public class InMemoryFilmStorage extends InMemoryStorage<Film> implements FilmSt
     }
 
     @Override
+    public void deleteFilm(int filmId) {
+        deleteEntry(filmId);
+    }
+
+    @Override
     public List<Film> getAllFilms() {
         return getAll();
     }

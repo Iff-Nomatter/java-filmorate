@@ -37,6 +37,7 @@ public class FilmDbStorage implements FilmStorage {
             "DURATION = ?, RATING = ? WHERE FILM_ID = ?";
     final String FILM_ADD_LIKE = "INSERT INTO FILM_LIKE SET FILM_ID = ?, USER_ID = ?";
     final String FILM_REMOVE_LIKE = "DELETE FROM FILM_LIKE WHERE FILM_ID = ? AND USER_ID = ?";
+    final String FILM_REMOVE = "DELETE FROM FILM WHERE FILM_ID = ?";
 
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -110,6 +111,11 @@ public class FilmDbStorage implements FilmStorage {
     public void deleteLike(Film film, int userId) {
         film.getLikeSet().remove(userId);
         jdbcTemplate.update(FILM_REMOVE_LIKE, film.getId(), userId);
+    }
+
+    @Override
+    public void deleteFilm(int filmId) {
+        jdbcTemplate.update(FILM_REMOVE, filmId);
     }
 
     @Override

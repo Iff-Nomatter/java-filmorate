@@ -84,4 +84,8 @@ public class FilmService {
                 .limit(count)
                 .collect(Collectors.toList());
     }
+
+    public void deleteFilm(int filmId) {
+
+    }
 }
