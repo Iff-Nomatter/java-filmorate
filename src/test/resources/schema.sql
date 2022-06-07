@@ -25,7 +25,8 @@ create table IF NOT EXISTS FILM_GENRE
     constraint FILM_GENRE_PK
         primary key (FILM_ID, GENRE_ID),
     constraint "FILM_GENRE_film_FK"
-        foreign key (FILM_ID) references FILM,
+        foreign key (FILM_ID) references FILM
+            ON DELETE CASCADE,
     constraint "FILM_GENRE_genre_FK"
         foreign key (GENRE_ID) references GENRE
 );
@@ -48,9 +49,11 @@ create table IF NOT EXISTS FILM_LIKE
     constraint FILM_LIKE_PK
         primary key (FILM_ID, USER_ID),
     constraint FILM_LIKE_FILM_FK
-        foreign key (FILM_ID) references FILM,
+        foreign key (FILM_ID) references FILM
+            ON DELETE CASCADE,
     constraint FILM_LIKE_USER_FK
         foreign key (USER_ID) references USERS
+            ON DELETE CASCADE
 );
 
 create table IF NOT EXISTS USER_FRIEND
@@ -61,9 +64,11 @@ create table IF NOT EXISTS USER_FRIEND
     constraint USER_FRIEND_PK
         primary key (USER_ID, FRIEND_ID),
     constraint FRIEND_ID
-        foreign key (USER_ID) references USERS,
+        foreign key (USER_ID) references USERS
+            ON DELETE CASCADE,
     constraint USER_ID
         foreign key (USER_ID) references USERS
+            ON DELETE CASCADE
 );
 
 create table IF NOT EXISTS FILM_RATING

@@ -63,6 +63,11 @@ public class InMemoryUserStorage extends InMemoryStorage<User> implements UserSt
     }
 
     @Override
+    public void deleteUser(int userId) {
+        deleteEntry(userId);
+    }
+
+    @Override
     public List<User> getAllUsers() {
         return getAll();
     }

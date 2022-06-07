@@ -7,13 +7,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmRating;
+import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @SpringBootTest
@@ -22,6 +27,7 @@ import java.time.LocalDate;
 class FilmorateApplicationTests {
 	private final UserDbStorage userStorage;
 	private final FilmDbStorage filmStorage;
+	private final JdbcTemplate jdbcTemplate;
 
 
 	@Test
@@ -119,5 +125,22 @@ class FilmorateApplicationTests {
 	@Test
 	public void testGetAllFilms() {
 		Assertions.assertNotNull(filmStorage.getAllFilms());
+	}
+
+	@Test
+	public void testDeleteUser() {
+		User userForDeletion = new User();
+		userForDeletion.setName("someone");
+		userForDeletion.setLogin("someLogin");
+		userForDeletion.setEmail("some@e.mail");
+		userForDeletion.setBirthday(LocalDate.of(1990, 5, 18));
+		userStorage.addUser(userForDeletion);
+		userStorage.addToFriends(userForDeletion, userStorage.getUserById(1));
+		userStorage.addToFriends(userForDeletion, userStorage.getUserById(3));
+		userStorage.deleteUser(4);
+		String selectFriends = "SELECT * FROM USER_FRIEND WHERE USER_ID = ?";
+		Assertions.assertFalse(jdbcTemplate.queryForRowSet(selectFriends, 4).next());
+		List<User> allUsers = userStorage.getAllUsers();
+		Assertions.assertEquals(3, allUsers.size());
 	}
 }
