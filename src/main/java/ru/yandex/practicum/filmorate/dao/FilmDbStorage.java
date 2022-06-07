@@ -17,6 +17,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component("filmDbStorage")
@@ -25,6 +26,18 @@ public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     final String FILM_REQUEST = "SELECT * FROM FILM WHERE FILM_ID = ?";
     final String FILM_ALL_REQUEST = "select * from FILM";
+    final String FILM_ALL_REQUEST_LIMIT = "SELECT * FROM film LIMIT ?";
+    final String FILM_YEAR_FILTER_REQUEST = "SELECT * FROM film " +
+            "WHERE EXTRACT(YEAR FROM release_date::date) = ? LIMIT ?";
+    final String FILM_GENRE_FILTER_REQUEST = "SELECT f.* FROM film AS f " +
+            "JOIN film_genre AS fg ON f.film_id = fg.film_id " +
+            "JOIN genre AS g ON fg.genre_id = g.genre_id " +
+            "WHERE g.genre = ? LIMIT ?";
+    final String FILM_GENRE_YEAR_FILTER_REQUEST = "SELECT f.* FROM film AS f " +
+            "JOIN film_genre AS fg ON f.film_id = fg.film_id " +
+            "JOIN genre AS g ON fg.genre_id = g.genre_id " +
+            "WHERE g.genre = ? AND EXTRACT(YEAR FROM release_date::date) = ?" +
+            "LIMIT ?";
     final String FILM_LIKES_REQUEST = "SELECT * FROM FILM_LIKE WHERE FILM_ID = ?";
     final String FILM_RATING_REQUEST = "SELECT * FROM FILM_RATING WHERE RATING_ID = ?";
     final String FILM_GENRE_REQUEST = "select G.* from FILM_GENRE as FG inner join GENRE as G " +
@@ -122,6 +135,23 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getPopular(Integer limit, String genre, Integer year) {
+        List<Film> popularFilms;
+        if (genre == null && year == null) {
+            popularFilms = jdbcTemplate.query(FILM_ALL_REQUEST_LIMIT, new FilmRowMapper(), limit);
+        } else if (genre == null) {
+            popularFilms = jdbcTemplate.query(FILM_YEAR_FILTER_REQUEST, new FilmRowMapper(), year, limit);
+        } else if (year == null) {
+            popularFilms = jdbcTemplate.query(FILM_GENRE_FILTER_REQUEST, new FilmRowMapper(), genre, limit);
+        } else {
+            popularFilms = jdbcTemplate.query(FILM_GENRE_YEAR_FILTER_REQUEST, new FilmRowMapper(), genre, year, limit);
+        }
+        return  popularFilms.stream()
+                .map(this::mapFilmProperties)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public Film getFilmById(int id) {
         Film film = jdbcTemplate.queryForObject(FILM_REQUEST,
                 new FilmRowMapper(), id);
@@ -131,7 +161,7 @@ public class FilmDbStorage implements FilmStorage {
         return film;
     }
 
-    private void mapFilmProperties(Film film) {
+    private Film mapFilmProperties(Film film) {
         FilmRating filmRating = jdbcTemplate.queryForObject(FILM_RATING_REQUEST,
                 new FilmRatingRowMapper(), film.getMpa().getId());
         film.setMpa(filmRating);
@@ -143,5 +173,8 @@ public class FilmDbStorage implements FilmStorage {
         List<Integer> filmLikeList = jdbcTemplate.query(FILM_LIKES_REQUEST, new FilmLikeRowMapper(), film.getId());
         Set<Integer> filmLikeSet = new HashSet<>(filmLikeList);
         film.setLikeSet(filmLikeSet);
+
+        return film;
     }
+
 }

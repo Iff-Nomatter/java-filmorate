@@ -48,4 +48,9 @@ public class InMemoryFilmStorage extends InMemoryStorage<Film> implements FilmSt
     public Film getFilmById(int id) {
         return getById(id);
     }
+
+    @Override
+    public List<Film> getPopular(Integer limit, String genre, Integer year) {
+        return null;
+    }
 }
