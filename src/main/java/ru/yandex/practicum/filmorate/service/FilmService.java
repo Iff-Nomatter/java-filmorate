@@ -5,7 +5,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.EntryNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -73,7 +75,7 @@ public class FilmService {
         }
         storage.deleteLike(film, userId);
     }
-    
+
     public List<Film> getTopByLikes(Integer count) {
         if (count == null || count <= 0) {
             count = 10;
@@ -83,5 +85,19 @@ public class FilmService {
                 .sorted(likeAmountComparator.reversed())
                 .limit(count)
                 .collect(Collectors.toList());
+    }
+
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        User user = userStorage.getUserById(userId);
+        User friend = userStorage.getUserById(friendId);
+        if (!user.getFriendSet().containsKey(friend.getId())) {
+            throw new ValidationException("Пользователь с id: " + friendId +
+                    " не является другом пользователя с id: " + userId);
+        }
+        return storage.getAllFilms().stream().
+                filter(f -> f.getLikeSet().contains(user.getId())).
+                filter(f -> f.getLikeSet().contains(friend.getId())).
+                sorted((f1, f2) -> f2.getLikeSet().size() - f1.getLikeSet().size()).
+                collect(Collectors.toList());
     }
 }
