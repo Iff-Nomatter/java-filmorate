@@ -26,13 +26,12 @@ public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     final String FILM_REQUEST = "SELECT * FROM FILM WHERE FILM_ID = ?";
     final String FILM_ALL_REQUEST = "select * from FILM";
-    final String FILM_ALL_REQUEST_LIMIT = "SELECT * FROM film LIMIT ?";
     final String FILM_YEAR_FILTER_REQUEST = "SELECT * FROM film " +
-            "WHERE EXTRACT(YEAR FROM release_date::date) = ? LIMIT ?";
+            "WHERE EXTRACT(YEAR FROM release_date::date) = ?";
     final String FILM_GENRE_FILTER_REQUEST = "SELECT f.* FROM film AS f " +
             "JOIN film_genre AS fg ON f.film_id = fg.film_id " +
             "JOIN genre AS g ON fg.genre_id = g.genre_id " +
-            "WHERE g.genre = ? LIMIT ?";
+            "WHERE g.genre = ?";
     final String FILM_GENRE_YEAR_FILTER_REQUEST = "SELECT f.* FROM film AS f " +
             "JOIN film_genre AS fg ON f.film_id = fg.film_id " +
             "JOIN genre AS g ON fg.genre_id = g.genre_id " +
@@ -138,13 +137,13 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getPopular(Integer limit, String genre, Integer year) {
         List<Film> popularFilms;
         if (genre == null && year == null) {
-            popularFilms = jdbcTemplate.query(FILM_ALL_REQUEST_LIMIT, new FilmRowMapper(), limit);
+            popularFilms = jdbcTemplate.query(FILM_ALL_REQUEST, new FilmRowMapper());
         } else if (genre == null) {
-            popularFilms = jdbcTemplate.query(FILM_YEAR_FILTER_REQUEST, new FilmRowMapper(), year, limit);
+            popularFilms = jdbcTemplate.query(FILM_YEAR_FILTER_REQUEST, new FilmRowMapper(), year);
         } else if (year == null) {
-            popularFilms = jdbcTemplate.query(FILM_GENRE_FILTER_REQUEST, new FilmRowMapper(), genre, limit);
+            popularFilms = jdbcTemplate.query(FILM_GENRE_FILTER_REQUEST, new FilmRowMapper(), genre);
         } else {
-            popularFilms = jdbcTemplate.query(FILM_GENRE_YEAR_FILTER_REQUEST, new FilmRowMapper(), genre, year, limit);
+            popularFilms = jdbcTemplate.query(FILM_GENRE_YEAR_FILTER_REQUEST, new FilmRowMapper(), genre, year);
         }
         return  popularFilms.stream()
                 .map(this::mapFilmProperties)

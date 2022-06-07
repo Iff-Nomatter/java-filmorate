@@ -79,6 +79,7 @@ public class FilmService {
         Comparator<Film> likeAmountComparator = Comparator.comparingInt(o -> o.getLikeSet().size());
         return storage.getPopular(limit, genre, year).stream()
                 .sorted(likeAmountComparator.reversed())
+                .limit(limit)
                 .collect(Collectors.toList());
     }
 }
