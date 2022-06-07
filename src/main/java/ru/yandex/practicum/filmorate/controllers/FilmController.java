@@ -36,12 +36,12 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getTopByLikes(@RequestParam(defaultValue = "10", required = false) Integer limit,
+    public List<Film> getTopByLikes(@RequestParam(defaultValue = "10", required = false) Integer count,
                                     @RequestParam(required = false) String genre,
                                     @RequestParam(required = false) Integer year
     ) {
-        log.info("Запрошен список из " + limit + " лучших фильмов по лайкам.");
-        return filmService.getTopByLikes(limit, genre, year);
+        log.info("Запрошен список из " + count + " лучших фильмов по лайкам.");
+        return filmService.getTopByLikes(count, genre, year);
     }
 
     @PostMapping
