@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -74,5 +73,11 @@ public class UserController {
     public void deleteFromFriends(@PathVariable int id, @PathVariable int friendId) {
         userService.deleteFromFriends(id, friendId);
         log.info("Пользователь id" + id + " удалил из друзей пользователя id" + friendId + " :(");
+    }
+
+    @DeleteMapping("/{userId}")
+    public void deleteUser(@PathVariable int userId) {
+        userService.deleteUser(userId);
+        log.info("Пользователь id: " + userId + " удален.");
     }
 }

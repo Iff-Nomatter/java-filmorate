@@ -38,7 +38,7 @@ public class UserService {
         try {
             storage.updateUser(user);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntryNotFoundException("В базе отсутствует запись c id: " + user.getId());
+            throw new EntryNotFoundException("В базе отсутствует пользователь c id: " + user.getId());
         }
     }
 
@@ -50,7 +50,7 @@ public class UserService {
         try {
             return storage.getUserById(id);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntryNotFoundException("В базе отсутствует запись c id: " + id);
+            throw new EntryNotFoundException("В базе отсутствует пользователь c id: " + id);
         } catch (NullPointerException e) {
             throw new EntryNotFoundException("Что-то пошло не так в базе данных.");
         }
@@ -102,5 +102,9 @@ public class UserService {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
+    }
+
+    public void deleteUser(int userId) {
+        storage.deleteUser(userId);
     }
 }

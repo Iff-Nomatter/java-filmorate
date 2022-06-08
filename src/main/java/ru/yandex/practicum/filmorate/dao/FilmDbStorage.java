@@ -37,6 +37,11 @@ public class FilmDbStorage implements FilmStorage {
             "DURATION = ?, RATING = ? WHERE FILM_ID = ?";
     final String FILM_ADD_LIKE = "INSERT INTO FILM_LIKE SET FILM_ID = ?, USER_ID = ?";
     final String FILM_REMOVE_LIKE = "DELETE FROM FILM_LIKE WHERE FILM_ID = ? AND USER_ID = ?";
+    final String FILM_REMOVE = "DELETE FROM FILM WHERE FILM_ID = ?";
+    final String RATING_ALL_REQUEST = "SELECT * FROM FILM_RATING";
+    final String RATING_REQUEST = "SELECT * FROM FILM_RATING WHERE RATING_ID = ?";
+    final String GENRE_ALL_REQUEST = "SELECT * FROM GENRE";
+    final String GENRE_REQUEST = "SELECT * FROM GENRE WHERE GENRE_ID = ?";
 
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -101,6 +106,11 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public void deleteFilm(int filmId) {
+        jdbcTemplate.update(FILM_REMOVE, filmId);
+    }
+
+    @Override
     public void addLike(Film film, int userId) {
         film.getLikeSet().add(userId);
         jdbcTemplate.update(FILM_ADD_LIKE, film.getId(), userId);
@@ -119,6 +129,28 @@ public class FilmDbStorage implements FilmStorage {
             mapFilmProperties(film);
         }
         return allFilms;
+    }
+
+    @Override
+    public List<FilmRating> getAllRatings() {
+        return jdbcTemplate.query(RATING_ALL_REQUEST, new FilmRatingRowMapper());
+    }
+
+    @Override
+    public FilmRating getRatingById(int ratingId) {
+        return jdbcTemplate.queryForObject(RATING_REQUEST,
+                new FilmRatingRowMapper(), ratingId);
+    }
+
+    @Override
+    public List<FilmGenre> getAllGenres() {
+        return jdbcTemplate.query(GENRE_ALL_REQUEST, new FilmGenreRowMapper());
+    }
+
+    @Override
+    public FilmGenre getGenreById(int genreId) {
+        return jdbcTemplate.queryForObject(GENRE_REQUEST,
+                new FilmGenreRowMapper(), genreId);
     }
 
     @Override

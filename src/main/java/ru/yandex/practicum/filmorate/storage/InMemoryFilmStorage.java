@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmGenre;
+import ru.yandex.practicum.filmorate.model.FilmRating;
 
 import java.util.List;
 
@@ -30,6 +32,11 @@ public class InMemoryFilmStorage extends InMemoryStorage<Film> implements FilmSt
     }
 
     @Override
+    public void deleteFilm(int filmId) {
+        deleteEntry(filmId);
+    }
+
+    @Override
     public void addLike(Film film, int userId) {
         film.getLikeSet().add(userId);
     }
@@ -42,6 +49,26 @@ public class InMemoryFilmStorage extends InMemoryStorage<Film> implements FilmSt
     @Override
     public List<Film> getAllFilms() {
         return getAll();
+    }
+
+    @Override
+    public List<FilmRating> getAllRatings() {
+        return null;
+    }
+
+    @Override
+    public FilmRating getRatingById(int ratingId) {
+        return null;
+    }
+
+    @Override
+    public List<FilmGenre> getAllGenres() {
+        return null;
+    }
+
+    @Override
+    public FilmGenre getGenreById(int genreId) {
+        return null;
     }
 
     @Override

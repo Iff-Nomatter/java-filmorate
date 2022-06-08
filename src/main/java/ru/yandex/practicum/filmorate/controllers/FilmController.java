@@ -42,6 +42,8 @@ public class FilmController {
         return topFilmsByLikes;
     }
 
+    @GetMapping("/mpa")
+
     @PostMapping
     public ResponseEntity<Film> create(@Valid @RequestBody Film film) {
         filmService.addFilm(film);
@@ -66,5 +68,11 @@ public class FilmController {
     public void deleteLike(@PathVariable int id, @PathVariable int userId) {
         filmService.deleteLike(id, userId);
         log.info("Пользователь id: " + userId + " удалил лайк фильму id: " + id);
+    }
+
+    @DeleteMapping("/{filmId}")
+    public void deleteFilm(@PathVariable int filmId) {
+        filmService.deleteFilm(filmId);
+        log.info("Удален фильм id: " + filmId);
     }
 }

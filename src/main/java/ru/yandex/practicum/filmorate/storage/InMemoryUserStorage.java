@@ -38,6 +38,11 @@ public class InMemoryUserStorage extends InMemoryStorage<User> implements UserSt
     }
 
     @Override
+    public void deleteUser(int userId) {
+        deleteEntry(userId);
+    }
+
+    @Override
     public void addToFriends(User user, User friend) {
         if (friend.getFriendSet().containsKey(user.getId())) {
             user.getFriendSet().put(friend.getId(), FriendshipStatus.APPROVED);
