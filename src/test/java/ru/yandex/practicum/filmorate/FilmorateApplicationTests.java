@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.yandex.practicum.filmorate.dao.EventDbStorage;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -22,6 +23,7 @@ import java.time.LocalDate;
 class FilmorateApplicationTests {
 	private final UserDbStorage userStorage;
 	private final FilmDbStorage filmStorage;
+	private final EventDbStorage eventDbStorage;
 
 
 	@Test
@@ -119,5 +121,17 @@ class FilmorateApplicationTests {
 	@Test
 	public void testGetAllFilms() {
 		Assertions.assertNotNull(filmStorage.getAllFilms());
+	}
+
+	@Test
+	public void testGetUsersFeed() {
+		Film film = filmStorage.getFilmById(1);
+		filmStorage.addLike(film, 1);
+		User user = userStorage.getUserById(1);
+		User friend = userStorage.getUserById(2);
+		userStorage.addToFriends(user, friend);
+		filmStorage.deleteLike(film, 1);
+		userStorage.deleteFromFriends(user, friend);
+		Assertions.assertNotNull(eventDbStorage.getUsersFeed(1));
 	}
 }

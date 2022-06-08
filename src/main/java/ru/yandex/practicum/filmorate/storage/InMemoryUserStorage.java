@@ -2,7 +2,8 @@ package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.EntryNotFoundException;
-import ru.yandex.practicum.filmorate.model.FriendshipStatus;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.enumerations.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;

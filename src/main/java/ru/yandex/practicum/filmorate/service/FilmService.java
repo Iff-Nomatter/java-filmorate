@@ -4,8 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.EventDbStorage;
 import ru.yandex.practicum.filmorate.exceptions.EntryNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enumerations.EventType;
+import ru.yandex.practicum.filmorate.model.enumerations.Operation;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -18,12 +21,15 @@ import java.util.stream.Collectors;
 public class FilmService {
     private final FilmStorage storage;
     private final UserStorage userStorage;
+    private final EventDbStorage eventDbStorage;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage storage,
-                       @Qualifier("userDbStorage") UserStorage userStorage) {
+                       @Qualifier("userDbStorage") UserStorage userStorage,
+                       @Qualifier("eventDbStorage") EventDbStorage eventDbStorage) {
         this.storage = storage;
         this.userStorage = userStorage;
+        this.eventDbStorage = eventDbStorage;
     }
 
     public void addFilm(Film film) {
@@ -63,6 +69,7 @@ public class FilmService {
             throw new EntryNotFoundException("Пользователь с id: " + userId + " уже ставил лайк этому фильму!");
         }
         storage.addLike(film, userId);
+        eventDbStorage.addEventToFeed(userId, EventType.LIKE, Operation.ADD, filmId);
     }
 
     public void deleteLike(int filmId, int userId) {
@@ -72,6 +79,7 @@ public class FilmService {
             throw new EntryNotFoundException("Пользователь с id: " + userId + " не ставил лайк этому фильму!");
         }
         storage.deleteLike(film, userId);
+        eventDbStorage.addEventToFeed(userId, EventType.LIKE, Operation.REMOVE, filmId);
     }
     
     public List<Film> getTopByLikes(Integer count) {
