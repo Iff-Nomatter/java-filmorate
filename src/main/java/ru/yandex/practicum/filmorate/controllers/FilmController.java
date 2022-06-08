@@ -68,10 +68,10 @@ public class FilmController {
         log.info("Пользователь id: " + userId + " удалил лайк фильму id: " + id);
     }
 
-    @GetMapping("/common?userId={userId}&friendId={friendId}")
-    public List<Film> getCommonFilms(@PathVariable int userId, @PathVariable int friendId) {
-//        log.info("Пользователь id: " + id + " запросил список общих друзей\n" +
-//                "с пользователем id: " + otherId);
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam int userId, @RequestParam int friendId) {
+        log.info("Пользователь id: " + userId + " запросил список общих фильмов" +
+                " с другом id: " + friendId);
         return filmService.getCommonFilms(userId, friendId);
     }
 }
