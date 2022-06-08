@@ -133,7 +133,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopular(Integer limit, String genre, Integer year) {
+    public List<Film> getPopular(String genre, Integer year) {
         List<Film> popularFilms;
         if (genre == null && year == null) {
             popularFilms = jdbcTemplate.query(FILM_ALL_REQUEST, new FilmRowMapper());

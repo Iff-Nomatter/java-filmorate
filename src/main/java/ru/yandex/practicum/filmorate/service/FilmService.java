@@ -77,7 +77,7 @@ public class FilmService {
     
     public List<Film> getTopByLikes(Integer limit, String genre, Integer year) {
         Comparator<Film> likeAmountComparator = Comparator.comparingInt(o -> o.getLikeSet().size());
-        return storage.getPopular(limit, genre, year).stream()
+        return storage.getPopular(genre, year).stream()
                 .sorted(likeAmountComparator.reversed())
                 .limit(limit)
                 .collect(Collectors.toList());

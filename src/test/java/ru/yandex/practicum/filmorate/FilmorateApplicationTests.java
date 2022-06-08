@@ -130,26 +130,25 @@ class FilmorateApplicationTests {
 		filmStorage.addLike(filmFirst, 2);
 		filmStorage.addLike(filmSecond, 1);
 		//инициализируем параметры
-		Integer limit = 10;
 		String genre = null;
 		Integer year = null;
 		//выводим без фильтров
-		Assertions.assertEquals(3, filmStorage.getPopular(limit, genre, year).size());
-		Assertions.assertEquals(1, filmStorage.getPopular(limit, genre, year).get(0).getId());
+		Assertions.assertEquals(3, filmStorage.getPopular(genre, year).size());
+		Assertions.assertEquals(1, filmStorage.getPopular(genre, year).get(0).getId());
 		//выводим с фильтром по году
 		year = 1991;
-		Assertions.assertEquals(2, filmStorage.getPopular(limit, genre, year).size());
-		Assertions.assertEquals(2, filmStorage.getPopular(limit, genre, year).get(0).getId());
+		Assertions.assertEquals(2, filmStorage.getPopular(genre, year).size());
+		Assertions.assertEquals(2, filmStorage.getPopular(genre, year).get(0).getId());
 		//выводим с фильтром по жанру
 		year = null;
 		genre = "Gangster movie";
-		Assertions.assertEquals(2, filmStorage.getPopular(limit, genre, year).size());
-		Assertions.assertEquals(1, filmStorage.getPopular(limit, genre, year).get(0).getId());
+		Assertions.assertEquals(2, filmStorage.getPopular(genre, year).size());
+		Assertions.assertEquals(1, filmStorage.getPopular(genre, year).get(0).getId());
 		//выводим с филтрами по жанру и по году
 		year = 1991;
 		genre = "Gangster movie";
-		Assertions.assertEquals(1, filmStorage.getPopular(limit, genre, year).size());
-		Assertions.assertEquals(3, filmStorage.getPopular(limit, genre, year).get(0).getId());
+		Assertions.assertEquals(1, filmStorage.getPopular(genre, year).size());
+		Assertions.assertEquals(3, filmStorage.getPopular(genre, year).get(0).getId());
 	}
 
 	@Test
