@@ -42,8 +42,6 @@ public class FilmController {
         return topFilmsByLikes;
     }
 
-    @GetMapping("/mpa")
-
     @PostMapping
     public ResponseEntity<Film> create(@Valid @RequestBody Film film) {
         filmService.addFilm(film);

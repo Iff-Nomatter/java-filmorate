@@ -138,7 +138,7 @@ class FilmorateApplicationTests {
 		genre2.setId(5);
 		filmForDeletionGenre.add(genre1);
 		filmForDeletionGenre.add(genre2);
-		filmForDeletion.setGenre(filmForDeletionGenre);
+		filmForDeletion.setGenres(filmForDeletionGenre);
 		FilmRating filmForDeletionRating = new FilmRating();
 		filmForDeletionRating.setId(3);
 		Set<Integer> filmForDeletionLikeSet = new HashSet<>();

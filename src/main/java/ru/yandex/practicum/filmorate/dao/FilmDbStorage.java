@@ -17,6 +17,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component("filmDbStorage")
@@ -28,10 +29,11 @@ public class FilmDbStorage implements FilmStorage {
     final String FILM_LIKES_REQUEST = "SELECT * FROM FILM_LIKE WHERE FILM_ID = ?";
     final String FILM_RATING_REQUEST = "SELECT * FROM FILM_RATING WHERE RATING_ID = ?";
     final String FILM_GENRE_REQUEST = "select G.* from FILM_GENRE as FG inner join GENRE as G " +
-                                      "ON FG.GENRE_ID = G.GENRE_ID where FG.FILM_ID = ?";
+            "ON FG.GENRE_ID = G.GENRE_ID where FG.FILM_ID = ?";
+    final String FILM_GENRE_DELETE = "DELETE FROM FILM_GENRE WHERE FILM_ID = ?";
     final String FILM_INSERT = "INSERT INTO FILM (NAME, DESCRIPTION, RELEASE_DATE, " +
             "DURATION, RATING) VALUES (?, ?, ?, ?, ?)";
-    final String FILM_GENRE_INSERT = "INSERT INTO FILM_GENRE (FILM_ID, GENRE_ID) VALUES (?, ?)";
+    final String FILM_GENRE_INSERT = "MERGE INTO FILM_GENRE (FILM_ID, GENRE_ID) VALUES (?, ?)";
     final String FILM_LIKES_INSERT = "INSERT INTO FILM_LIKE (FILM_ID, USER_ID) VALUES (?, ?)";
     final String FILM_UPDATE = "UPDATE FILM SET NAME = ?, DESCRIPTION = ?, RELEASE_DATE = ?, " +
             "DURATION = ?, RATING = ? WHERE FILM_ID = ?";
@@ -46,6 +48,7 @@ public class FilmDbStorage implements FilmStorage {
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
+
     @Override
     public void addFilm(Film film) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -60,17 +63,20 @@ public class FilmDbStorage implements FilmStorage {
             ps.setInt(5, film.getMpa().getId());
             return ps;
         }, keyHolder);
-        film.setId((Integer)keyHolder.getKey());
-        if (film.getGenre() != null && !film.getGenre().isEmpty()) { //проверка, пока в тестах genre = null
-            addFilmGenreData(film);
-        }
+        film.setId((Integer) keyHolder.getKey());
+        addFilmGenreData(film);
         if (film.getLikeSet() != null && !film.getLikeSet().isEmpty()) {
             addFilmLikeData(film);
         }
     }
 
     private void addFilmGenreData(Film film) {
-        List <FilmGenre> filmGenre = film.getGenre();
+        jdbcTemplate.update(FILM_GENRE_DELETE, film.getId());
+        if (film.getGenres() == null || film.getGenres().isEmpty()) {
+            return;
+        }
+        film.setGenres(film.getGenres().stream().distinct().collect(Collectors.toList())); //убираем дубликаты
+        List<FilmGenre> filmGenre = film.getGenres();
         for (FilmGenre genre : filmGenre) {
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection.prepareStatement(FILM_GENRE_INSERT);
@@ -103,6 +109,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDuration(),
                 film.getMpa().getId(),
                 film.getId());
+        addFilmGenreData(film);
     }
 
     @Override
@@ -170,8 +177,11 @@ public class FilmDbStorage implements FilmStorage {
 
         List<FilmGenre> filmGenre = jdbcTemplate.query(FILM_GENRE_REQUEST,
                 new FilmGenreRowMapper(), film.getId());
-        film.setGenre(filmGenre);
-
+        if (filmGenre.isEmpty()) {
+            film.setGenres(null);
+        } else {
+            film.setGenres(filmGenre);
+        }
         List<Integer> filmLikeList = jdbcTemplate.query(FILM_LIKES_REQUEST, new FilmLikeRowMapper(), film.getId());
         Set<Integer> filmLikeSet = new HashSet<>(filmLikeList);
         film.setLikeSet(filmLikeSet);

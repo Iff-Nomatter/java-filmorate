@@ -12,7 +12,7 @@ MERGE INTO GENRE
     VALUES
         (1, 'Комедия'),
         (2, 'Драма'),
-        (3, 'Gangster movie'),
+        (3, 'Мультфильм'),
         (4, 'Detective'),
         (5, 'Drama'),
         (6, 'Historical movie');
