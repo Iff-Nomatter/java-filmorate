@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import org.hibernate.cfg.NotYetImplementedException;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
@@ -53,22 +54,22 @@ public class InMemoryFilmStorage extends InMemoryStorage<Film> implements FilmSt
 
     @Override
     public List<FilmRating> getAllRatings() {
-        return null;
+        throw new NotYetImplementedException("Не имплементировано.");
     }
 
     @Override
     public FilmRating getRatingById(int ratingId) {
-        return null;
+        throw new NotYetImplementedException("Не имплементировано.");
     }
 
     @Override
     public List<FilmGenre> getAllGenres() {
-        return null;
+        throw new NotYetImplementedException("Не имплементировано.");
     }
 
     @Override
     public FilmGenre getGenreById(int genreId) {
-        return null;
+        throw new NotYetImplementedException("Не имплементировано.");
     }
 
     @Override

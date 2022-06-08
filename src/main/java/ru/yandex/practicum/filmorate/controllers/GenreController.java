@@ -31,7 +31,7 @@ public class GenreController {
     }
 
     @GetMapping("/{genreId}")
-    public FilmGenre getRatingById(@PathVariable Integer genreId) {
+    public FilmGenre getGenreById(@PathVariable Integer genreId) {
         log.info("Запрошен жанр id: " + genreId);
         return filmService.getGenreById(genreId);
     }
