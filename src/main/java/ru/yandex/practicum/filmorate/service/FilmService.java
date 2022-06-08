@@ -132,4 +132,10 @@ public class FilmService {
             throw new EntryNotFoundException("В базе отсутствует жанр c id: " + genreId);
         }
     }
+
+    public List<Film> search(String query) {
+        return storage.search(query).stream().
+                sorted(Comparator.comparingInt(o -> -o.getLikeSet().size()))
+                .collect(Collectors.toList());
+    }
 }

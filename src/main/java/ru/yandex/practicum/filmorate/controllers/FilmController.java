@@ -82,4 +82,11 @@ public class FilmController {
         filmService.deleteFilm(filmId);
         log.info("Удален фильм id: " + filmId);
     }
+
+    @GetMapping("/search")
+    public List<Film> search(@RequestParam(required = true) String query) {
+        List<Film> films = filmService.search(query);
+        log.info("Запрошен поиск по " + query + ".");
+        return films;
+    }
 }

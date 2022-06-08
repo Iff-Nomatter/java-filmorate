@@ -34,4 +34,7 @@ public interface FilmStorage {
     List<Film> getPopular(String genre, Integer year);
 
     List<Film> getCommonFilms(int userId, int friendId);
+
+    List<Film> search(String query);
+
 }

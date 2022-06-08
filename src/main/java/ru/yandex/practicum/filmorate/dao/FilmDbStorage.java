@@ -62,6 +62,8 @@ public class FilmDbStorage implements FilmStorage {
             "INNER JOIN (SELECT * FROM FILM_LIKE WHERE USER_ID = ?) as b on a.FILM_ID = b.FILM_ID))" +
             " GROUP BY FILM_ID ORDER BY COUNT(FILM_ID) desc)";
 
+    final String FILM_SEARCH = "select * from film WHERE LOWER(name) LIKE LOWER(?)";
+
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -231,4 +233,12 @@ public class FilmDbStorage implements FilmStorage {
         return film;
     }
 
+    public List<Film> search(String query) {
+        String term = "%" + query + "%";
+        List<Film> allFilms = jdbcTemplate.query(FILM_SEARCH, new FilmRowMapper(), term);
+        for (Film film : allFilms) {
+            mapFilmProperties(film);
+        }
+        return allFilms;
+    }
 }
