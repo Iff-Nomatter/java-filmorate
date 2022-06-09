@@ -28,7 +28,7 @@ public class FilmDbStorage implements FilmStorage {
     final String FILM_LIKES_REQUEST = "SELECT * FROM FILM_LIKE WHERE FILM_ID = ?";
     final String FILM_RATING_REQUEST = "SELECT * FROM FILM_RATING WHERE RATING_ID = ?";
     final String FILM_GENRE_REQUEST = "select G.* from FILM_GENRE as FG inner join GENRE as G " +
-                                      "ON FG.GENRE_ID = G.GENRE_ID where FG.FILM_ID = ?";
+            "ON FG.GENRE_ID = G.GENRE_ID where FG.FILM_ID = ?";
     final String FILM_INSERT = "INSERT INTO FILM (NAME, DESCRIPTION, RELEASE_DATE, " +
             "DURATION, RATING) VALUES (?, ?, ?, ?, ?)";
     final String FILM_GENRE_INSERT = "INSERT INTO FILM_GENRE (FILM_ID, GENRE_ID) VALUES (?, ?)";
@@ -38,9 +38,17 @@ public class FilmDbStorage implements FilmStorage {
     final String FILM_ADD_LIKE = "INSERT INTO FILM_LIKE SET FILM_ID = ?, USER_ID = ?";
     final String FILM_REMOVE_LIKE = "DELETE FROM FILM_LIKE WHERE FILM_ID = ? AND USER_ID = ?";
 
+    final String GET_COMMON_FILMS_REQUEST = "SELECT * FROM FILM WHERE FILM_ID IN " +
+            "(SELECT FILM_ID FROM FILM_LIKE WHERE FILM_ID IN " +
+            "(SELECT FILM.FILM_ID FROM FILM WHERE FILM_ID IN (SELECT a.FILM_ID FROM " +
+            "(SELECT * FROM FILM_LIKE WHERE USER_ID = ?) as a " +
+            "INNER JOIN (SELECT * FROM FILM_LIKE WHERE USER_ID = ?) as b on a.FILM_ID = b.FILM_ID))" +
+            " GROUP BY FILM_ID ORDER BY COUNT(FILM_ID) desc)";
+
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
+
     @Override
     public void addFilm(Film film) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -55,7 +63,7 @@ public class FilmDbStorage implements FilmStorage {
             ps.setInt(5, film.getMpa().getId());
             return ps;
         }, keyHolder);
-        film.setId((Integer)keyHolder.getKey());
+        film.setId((Integer) keyHolder.getKey());
         if (film.getGenre() != null && !film.getGenre().isEmpty()) { //проверка, пока в тестах genre = null
             addFilmGenreData(film);
         }
@@ -65,7 +73,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void addFilmGenreData(Film film) {
-        List <FilmGenre> filmGenre = film.getGenre();
+        List<FilmGenre> filmGenre = film.getGenre();
         for (FilmGenre genre : filmGenre) {
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection.prepareStatement(FILM_GENRE_INSERT);
@@ -129,6 +137,15 @@ public class FilmDbStorage implements FilmStorage {
             mapFilmProperties(film);
         }
         return film;
+    }
+
+    @Override
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        List<Film> commonFilms = jdbcTemplate.query(GET_COMMON_FILMS_REQUEST, new FilmRowMapper(), userId, friendId);
+        for (Film film : commonFilms) {
+            mapFilmProperties(film);
+        }
+        return commonFilms;
     }
 
     private void mapFilmProperties(Film film) {

@@ -94,10 +94,6 @@ public class FilmService {
             throw new ValidationException("Пользователь с id: " + friendId +
                     " не является другом пользователя с id: " + userId);
         }
-        return storage.getAllFilms().stream().
-                filter(f -> f.getLikeSet().contains(user.getId())).
-                filter(f -> f.getLikeSet().contains(friend.getId())).
-                sorted((f1, f2) -> f2.getLikeSet().size() - f1.getLikeSet().size()).
-                collect(Collectors.toList());
+        return storage.getCommonFilms(userId, friendId);
     }
 }
