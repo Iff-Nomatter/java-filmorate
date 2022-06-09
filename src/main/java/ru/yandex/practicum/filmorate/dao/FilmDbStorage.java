@@ -5,11 +5,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dao.mappers.FilmGenreRowMapper;
-import ru.yandex.practicum.filmorate.dao.mappers.FilmLikeRowMapper;
-import ru.yandex.practicum.filmorate.dao.mappers.FilmRatingRowMapper;
-import ru.yandex.practicum.filmorate.dao.mappers.FilmRowMapper;
+import ru.yandex.practicum.filmorate.dao.mappers.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmDirector;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -17,6 +15,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component("filmDbStorage")
@@ -131,7 +130,16 @@ public class FilmDbStorage implements FilmStorage {
         return film;
     }
 
-    private void mapFilmProperties(Film film) {
+    @Override
+    public List<Film> getByDirector(int directorId) {
+        List<Film> byDirector = jdbcTemplate.query("", new FilmRowMapper(), directorId);
+
+        return byDirector.stream()
+                .map(this::mapFilmProperties)
+                .collect(Collectors.toList());
+    }
+
+    private Film mapFilmProperties(Film film) {
         FilmRating filmRating = jdbcTemplate.queryForObject(FILM_RATING_REQUEST,
                 new FilmRatingRowMapper(), film.getMpa().getId());
         film.setMpa(filmRating);
@@ -143,5 +151,10 @@ public class FilmDbStorage implements FilmStorage {
         List<Integer> filmLikeList = jdbcTemplate.query(FILM_LIKES_REQUEST, new FilmLikeRowMapper(), film.getId());
         Set<Integer> filmLikeSet = new HashSet<>(filmLikeList);
         film.setLikeSet(filmLikeSet);
+
+        FilmDirector filmDirector = jdbcTemplate.queryForObject("",
+                new FilmDirectorRowMapper(), film.getDirector().getId());
+        film.setDirector(filmDirector);
+        return film;
     }
 }

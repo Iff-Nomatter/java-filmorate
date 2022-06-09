@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.EntryNotFoundException;
+import ru.yandex.practicum.filmorate.model.FilmDirector;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -84,4 +85,12 @@ public class FilmService {
                 .limit(count)
                 .collect(Collectors.toList());
     }
+
+    public List<Film> getByDirector(int directorId, String sortBy) {
+        if (sortBy.equals("year") || sortBy.equals("likes")) {
+            return storage.getByDirector(directorId);
+        }
+        throw new IllegalArgumentException("Некорректное значение параметра sortBy: " + sortBy);
+    }
+
 }

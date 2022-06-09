@@ -67,4 +67,12 @@ public class FilmController {
         filmService.deleteLike(id, userId);
         log.info("Пользователь id: " + userId + " удалил лайк фильму id: " + id);
     }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getByDirector(@PathVariable int directorId,
+                                    @RequestParam(required = false) String sortBy) {
+        log.info("Запрошен список фильмов режиссёра " + directorId +
+                ", отсортированных по " + sortBy);
+        return filmService.getByDirector(directorId, sortBy);
+    }
 }

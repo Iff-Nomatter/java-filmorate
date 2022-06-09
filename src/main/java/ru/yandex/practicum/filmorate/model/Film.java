@@ -26,6 +26,7 @@ public class Film extends IdHolder{
     @Min(value = 1, message = "не может быть отрицательна или равна нулю")
     private int duration;
     private List <FilmGenre> genre;
+    private FilmDirector director;
     @Valid
     @NotNull
     private FilmRating mpa;
