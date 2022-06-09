@@ -16,7 +16,8 @@ import java.util.List;
 public class EventDbStorage {
     final String EVENT_INSERT = "INSERT INTO USER_FEED (USER_ID, ENTITY_ID, EVENT_TYPE, OPERATION, " +
             "EVENT_TIME) VALUES (?, ?, ?, ?, ?)";
-    final String EVENT_FEED_REQUEST = "SELECT * FROM USER_FEED WHERE USER_ID = ? ORDER BY EVENT_TIME";
+    final String EVENT_FEED_REQUEST = "select UF.* from USER_FEED as UF inner join USER_FRIEND as F " +
+            "ON UF.USER_ID = F.FRIEND_ID where F.USER_ID = ? ORDER BY UF.USER_ID, EVENT_TIME DESC";
     private final JdbcTemplate jdbcTemplate;
 
     public EventDbStorage(JdbcTemplate jdbcTemplate) {

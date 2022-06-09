@@ -78,6 +78,8 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void addToFriends(User user, User friend) {
         if (friend.getFriendSet().containsKey(user.getId())) {
+            jdbcTemplate.update(USER_ADD_FRIEND_PENDING,
+                    user.getId(), friend.getId(), FriendshipStatus.APPROVED.toString());
             jdbcTemplate.update(USER_ADD_FRIEND_APPROVED,
                     FriendshipStatus.APPROVED.toString(),
                     user.getId(),
