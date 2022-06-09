@@ -6,7 +6,7 @@ create table IF NOT EXISTS FILM
     RELEASE_DATE TIMESTAMP,
     DURATION     INTEGER,
     RATING       INTEGER,
-    DIRECTOR_ID  INTEGER
+    DIRECTOR_ID  INTEGER,
     constraint FILM_ID
         primary key (FILM_ID)
 );
@@ -81,7 +81,7 @@ create table IF NOT EXISTS FILM_DIRECTOR
     NAME       CHARACTER VARYING,
     constraint FILM_DIRECTOR_PK
         primary key (DIRECTOR_ID),
-    constraint "FILM_DIRECTOR_FILM_FK"
+    constraint FILM_DIRECTOR_FILM_FK
         foreign key (DIRECTOR_ID) references FILM
 
 );

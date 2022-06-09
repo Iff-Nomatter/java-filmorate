@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmDirector;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.PreparedStatement;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
+
     final String FILM_REQUEST = "SELECT * FROM FILM WHERE FILM_ID = ?";
     final String FILM_ALL_REQUEST = "select * from FILM";
     final String FILM_LIKES_REQUEST = "SELECT * FROM FILM_LIKE WHERE FILM_ID = ?";
@@ -36,10 +38,14 @@ public class FilmDbStorage implements FilmStorage {
             "DURATION = ?, RATING = ? WHERE FILM_ID = ?";
     final String FILM_ADD_LIKE = "INSERT INTO FILM_LIKE SET FILM_ID = ?, USER_ID = ?";
     final String FILM_REMOVE_LIKE = "DELETE FROM FILM_LIKE WHERE FILM_ID = ? AND USER_ID = ?";
+    final String FILM_BY_DIRECTOR_REQUEST = "SELECT * FROM FILM WHERE DIRECTOR_ID = ?";
+    final String FILM_DIRECTOR_REQUEST = "SELECT * FROM FILM_DIRECTOR " +
+            "WHERE DIRECTOR_ID = (SELECT DIRECTOR_ID FROM FILM WHERE FILM_ID = ?)";
 
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
+
     @Override
     public void addFilm(Film film) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -132,9 +138,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getByDirector(int directorId) {
-        List<Film> byDirector = jdbcTemplate.query("", new FilmRowMapper(), directorId);
-
-        return byDirector.stream()
+        return jdbcTemplate.query(FILM_BY_DIRECTOR_REQUEST, new FilmRowMapper(), directorId).stream()
                 .map(this::mapFilmProperties)
                 .collect(Collectors.toList());
     }
@@ -152,8 +156,8 @@ public class FilmDbStorage implements FilmStorage {
         Set<Integer> filmLikeSet = new HashSet<>(filmLikeList);
         film.setLikeSet(filmLikeSet);
 
-        FilmDirector filmDirector = jdbcTemplate.queryForObject("",
-                new FilmDirectorRowMapper(), film.getDirector().getId());
+        FilmDirector filmDirector = jdbcTemplate.queryForObject(FILM_DIRECTOR_REQUEST,
+                new FilmDirectorRowMapper(), film.getId());
         film.setDirector(filmDirector);
         return film;
     }

@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -87,10 +88,17 @@ public class FilmService {
     }
 
     public List<Film> getByDirector(int directorId, String sortBy) {
-        if (sortBy.equals("year") || sortBy.equals("likes")) {
-            return storage.getByDirector(directorId);
+        Comparator<Film> comparator;
+        if (sortBy.equals("year")) {
+            comparator = Comparator.comparingInt(f -> f.getReleaseDate().getYear());
+        } else if (sortBy.equals("likes")) {
+            comparator = Comparator.comparingInt(f -> f.getLikeSet().size());
+        } else {
+            throw new IllegalArgumentException("Некорректное значение параметра sortBy: " + sortBy);
         }
-        throw new IllegalArgumentException("Некорректное значение параметра sortBy: " + sortBy);
+        return storage.getByDirector(directorId).stream()
+                .sorted(comparator.reversed())
+                .collect(Collectors.toList());
     }
 
 }

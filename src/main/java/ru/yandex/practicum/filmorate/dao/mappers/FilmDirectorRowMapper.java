@@ -11,8 +11,8 @@ public class FilmDirectorRowMapper implements RowMapper<FilmDirector> {
     @Override
     public FilmDirector mapRow(ResultSet rs, int rowNum) throws SQLException {
         FilmDirector filmDirector = new FilmDirector();
-        filmDirector.setId(rs.getInt("GENRE_ID"));
-        filmDirector.setName(rs.getString("GENRE"));
+        filmDirector.setId(rs.getInt("DIRECTOR_ID"));
+        filmDirector.setName(rs.getString("NAME"));
         return filmDirector;
     }
 }

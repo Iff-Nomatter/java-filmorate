@@ -7,13 +7,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.yandex.practicum.filmorate.dao.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmDirector;
 import ru.yandex.practicum.filmorate.model.FilmRating;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Slf4j
 @SpringBootTest
@@ -22,6 +25,7 @@ import java.time.LocalDate;
 class FilmorateApplicationTests {
 	private final UserDbStorage userStorage;
 	private final FilmDbStorage filmStorage;
+	private final DirectorDbStorage directorStorage;
 
 
 	@Test
@@ -43,7 +47,7 @@ class FilmorateApplicationTests {
 		Assertions.assertEquals(updatedUser.getId(), newUserForUpdate.getId());
 		Assertions.assertEquals(newUserForUpdate.getLogin(), updatedUser.getLogin());
 		//проверка замены пустого имени логином при обновлении
-		Assertions.assertEquals(newUserForUpdate.getLogin(), updatedUser.getName());
+		Assertions.assertEquals(newUserForUpdate.getName(), updatedUser.getName());
 		Assertions.assertEquals(newUserForUpdate.getBirthday(), updatedUser.getBirthday());
 		Assertions.assertEquals(newUserForUpdate.getEmail(), updatedUser.getEmail());
 	}
@@ -119,5 +123,58 @@ class FilmorateApplicationTests {
 	@Test
 	public void testGetAllFilms() {
 		Assertions.assertNotNull(filmStorage.getAllFilms());
+	}
+
+	@Test
+	public void testUpdateDirector() {
+		//создаём обновлённого режиссёра
+		FilmDirector updatedDirector = new FilmDirector();
+		updatedDirector.setId(2);
+		updatedDirector.setName("VasyanPro");
+		//обновляем режиссёра
+		directorStorage.updateDirector(updatedDirector);
+		//загружаем из базы
+		FilmDirector loadedDirector = directorStorage.getDirector(updatedDirector.getId());
+		//сравниваем
+		Assertions.assertEquals(loadedDirector.getId(), updatedDirector.getId());
+		Assertions.assertEquals(loadedDirector.getName(), updatedDirector.getName());
+
+
+	}
+
+	@Test
+	public void testDeleteDirector() {
+		//задаём id
+		int id = 3;
+		//проверяем, что такой режиссёр в базе есть
+		Assertions.assertTrue(directorStorage.getDirector(id) != null);
+		//удаляем
+		directorStorage.deleteDirector(id);
+		//проверяем отсутсвтие в базе режиссёра
+		Assertions.assertNull(directorStorage.getDirector(id));
+	}
+
+	@Test
+	public void getAllDirectors() {
+		Assertions.assertNotNull(directorStorage.getAllDirectors());
+	}
+
+	@Test
+	public void testGetDirector() {
+		//задаём id
+		int id = 1;
+		//загружаем из базы
+		FilmDirector director = directorStorage.getDirector(id);
+		//проверяем
+		Assertions.assertEquals(director.getId(), id);
+	}
+
+	@Test
+	public void testGetFilmsByDirector() {
+		//задаём id режиссёра
+		int id = 1;
+		//получаем из базы
+		List<Film> loadedFilms = filmStorage.getByDirector(1);
+		Assertions.assertEquals(loadedFilms.size(), 2);
 	}
 }
