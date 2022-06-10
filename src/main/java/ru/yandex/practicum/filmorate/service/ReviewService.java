@@ -2,8 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.ReviewDao;
-import ru.yandex.practicum.filmorate.exceptions.EntryNotFoundException;
+import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.model.FilmReview;
 
 import java.util.List;
@@ -12,54 +11,62 @@ import java.util.Optional;
 @Slf4j
 @Service
 public class ReviewService {
-    private final ReviewDao reviewDao;
+    private final ReviewStorage reviewStorage;
 
-    public ReviewService(ReviewDao reviewDao) {
-        this.reviewDao = reviewDao;
+    public ReviewService(ReviewStorage reviewStorage) {
+        this.reviewStorage = reviewStorage;
     }
 
     public FilmReview create(FilmReview review) {
-        return reviewDao.create(review);
+        return reviewStorage.create(review);
     }
 
     public FilmReview update(FilmReview review) {
-        return reviewDao.update(review);
+        return reviewStorage.update(review);
     }
 
-    public Optional<FilmReview> getById(Long id) {
-        return reviewDao.get(id);
+    public void remove(int id) {
+        reviewStorage.remove(id);
     }
 
-    public FilmReview addLike(Long id, int userId) {
-        if (reviewDao.getLike(id, userId).isEmpty()) {
-            return reviewDao.addLike(id, userId, true);
+    public Optional<FilmReview> getById(int id) {
+        return reviewStorage.get(id);
+    }
+
+    public FilmReview addLike(int id, int userId) {
+        if (reviewStorage.getLike(id, userId).isEmpty()) {
+            return reviewStorage.addLike(id, userId, true);
         } else {
-            return reviewDao.updateLike(id, userId, true);
+            return reviewStorage.updateLike(id, userId, true);
         }
     }
 
-    public FilmReview addDislike(Long id, int userId) {
-        if (reviewDao.getLike(id, userId).isEmpty()) {
-            return reviewDao.addLike(id, userId, false);
+    public FilmReview addDislike(int id, int userId) {
+        if (reviewStorage.getLike(id, userId).isEmpty()) {
+            return reviewStorage.addLike(id, userId, false);
         } else {
-            return reviewDao.updateLike(id, userId, false);
+            return reviewStorage.updateLike(id, userId, false);
         }
     }
 
-    public FilmReview removeLike(Long id, int userId) {
-            return reviewDao.removeLike(id, userId);
+    public FilmReview removeLike(int id, int userId) {
+        return reviewStorage.removeLike(id, userId);
     }
 
-    public FilmReview removeDislike(Long id, int userId) {
-        return reviewDao.removeLike(id, userId);
+    public FilmReview removeDislike(int id, int userId) {
+        return reviewStorage.removeLike(id, userId);
     }
 
-    public List<FilmReview> getReviewByFilmId(int filmId) {
-        return reviewDao.getReviewByFilmId(filmId);
+    public List<FilmReview> getFilmReview(int filmId, int count) {
+        if (filmId == 0) {
+          return reviewStorage.getAll(count);
+        } else {
+          return reviewStorage.getReviewByFilmId(filmId, count);
+        }
     }
 
-    public List<FilmReview> getAll() {
-        return reviewDao.getAll();
+    public List<FilmReview> getAll(int count) {
+        return reviewStorage.getAll(count);
     }
 
 }
