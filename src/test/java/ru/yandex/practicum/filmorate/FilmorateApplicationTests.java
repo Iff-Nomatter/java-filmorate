@@ -131,7 +131,7 @@ class FilmorateApplicationTests {
 	@Test
 	public void testFilmRemove() {
 		Film filmForDeletion = new Film();
-		LinkedHashSet<FilmGenre> filmForDeletionGenre = new HashSet<>();
+		LinkedHashSet<FilmGenre> filmForDeletionGenre = new LinkedHashSet<>();
 		FilmGenre genre1 = new FilmGenre();
 		genre1.setId(1);
 		FilmGenre genre2 = new FilmGenre();
