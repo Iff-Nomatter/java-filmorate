@@ -75,8 +75,8 @@ public class FilmDbStorage implements FilmStorage {
         if (film.getGenres() == null || film.getGenres().isEmpty()) {
             return;
         }
-        film.setGenres(film.getGenres().stream().distinct().collect(Collectors.toList())); //убираем дубликаты
-        List<FilmGenre> filmGenre = film.getGenres();
+        //film.setGenres(film.getGenres().stream().distinct().collect(Collectors.toList())); //убираем дубликаты
+        Set<FilmGenre> filmGenre = film.getGenres();
         for (FilmGenre genre : filmGenre) {
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection.prepareStatement(FILM_GENRE_INSERT);
@@ -175,15 +175,15 @@ public class FilmDbStorage implements FilmStorage {
                 new FilmRatingRowMapper(), film.getMpa().getId());
         film.setMpa(filmRating);
 
-        List<FilmGenre> filmGenre = jdbcTemplate.query(FILM_GENRE_REQUEST,
-                new FilmGenreRowMapper(), film.getId());
+        Set<FilmGenre> filmGenre = new HashSet<>(jdbcTemplate.query(FILM_GENRE_REQUEST,
+                new FilmGenreRowMapper(), film.getId()));
         if (filmGenre.isEmpty()) {
             film.setGenres(null);
         } else {
             film.setGenres(filmGenre);
         }
-        List<Integer> filmLikeList = jdbcTemplate.query(FILM_LIKES_REQUEST, new FilmLikeRowMapper(), film.getId());
-        Set<Integer> filmLikeSet = new HashSet<>(filmLikeList);
+        Set<Integer> filmLikeSet = new HashSet<>(jdbcTemplate.query(FILM_LIKES_REQUEST,
+                new FilmLikeRowMapper(), film.getId()));
         film.setLikeSet(filmLikeSet);
     }
 }

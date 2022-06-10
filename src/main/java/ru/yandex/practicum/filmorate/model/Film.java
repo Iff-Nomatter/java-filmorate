@@ -25,7 +25,7 @@ public class Film extends IdHolder{
     private LocalDate releaseDate;
     @Min(value = 1, message = "не может быть отрицательна или равна нулю")
     private int duration;
-    private List <FilmGenre> genres;
+    private Set<FilmGenre> genres;
     @Valid
     @NotNull
     private FilmRating mpa;
