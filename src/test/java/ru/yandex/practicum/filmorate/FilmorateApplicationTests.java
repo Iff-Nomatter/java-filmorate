@@ -17,7 +17,6 @@ import ru.yandex.practicum.filmorate.model.FilmRating;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -131,7 +130,7 @@ class FilmorateApplicationTests {
 	@Test
 	public void testFilmRemove() {
 		Film filmForDeletion = new Film();
-		List<FilmGenre> filmForDeletionGenre = new ArrayList<>();
+		Set<FilmGenre> filmForDeletionGenre = new HashSet<>();
 		FilmGenre genre1 = new FilmGenre();
 		genre1.setId(1);
 		FilmGenre genre2 = new FilmGenre();
