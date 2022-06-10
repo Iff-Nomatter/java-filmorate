@@ -74,7 +74,6 @@ public class FilmDbStorage implements FilmStorage {
         if (film.getGenres() == null || film.getGenres().isEmpty()) {
             return;
         }
-        //film.setGenres(film.getGenres().stream().distinct().collect(Collectors.toList())); //убираем дубликаты
         Set<FilmGenre> filmGenre = film.getGenres();
         for (FilmGenre genre : filmGenre) {
             jdbcTemplate.update(connection -> {
