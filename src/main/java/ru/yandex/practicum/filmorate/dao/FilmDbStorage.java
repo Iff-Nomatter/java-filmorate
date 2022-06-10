@@ -17,7 +17,6 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component("filmDbStorage")
