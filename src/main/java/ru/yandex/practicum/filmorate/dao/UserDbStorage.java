@@ -7,7 +7,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.mappers.UserRowMapper;
-import ru.yandex.practicum.filmorate.model.FriendshipStatus;
+import ru.yandex.practicum.filmorate.model.enumerations.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -78,6 +78,8 @@ public class UserDbStorage implements UserStorage {
     @Override
     public void addToFriends(User user, User friend) {
         if (friend.getFriendSet().containsKey(user.getId())) {
+            jdbcTemplate.update(USER_ADD_FRIEND_PENDING,
+                    user.getId(), friend.getId(), FriendshipStatus.APPROVED.toString());
             jdbcTemplate.update(USER_ADD_FRIEND_APPROVED,
                     FriendshipStatus.APPROVED.toString(),
                     user.getId(),

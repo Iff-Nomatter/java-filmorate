@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -48,6 +49,12 @@ public class UserController {
         log.info("Пользователь id: " + id + " запросил список общих друзей\n" +
                 "с пользователем id: " + otherId);
         return userService.getCommonFriendsList(id, otherId);
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<Event> getUsersFeed(@PathVariable int id) {
+        log.info("Запрошена лента событий пользователя id: " + id);
+        return userService.getUsersFeed(id);
     }
 
     @PostMapping

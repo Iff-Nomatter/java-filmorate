@@ -4,10 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.EventDbStorage;
 import ru.yandex.practicum.filmorate.exceptions.EntryNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-import ru.yandex.practicum.filmorate.model.FriendshipStatus;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.enumerations.EventType;
+import ru.yandex.practicum.filmorate.model.enumerations.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enumerations.Operation;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
@@ -18,10 +22,13 @@ import java.util.Map;
 public class UserService {
 
     private final UserStorage storage;
+    private final EventDbStorage eventDbStorage;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage storage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage storage,
+                       @Qualifier("eventDbStorage") EventDbStorage eventDbStorage) {
         this.storage = storage;
+        this.eventDbStorage = eventDbStorage;
     }
 
     public void addUser(User user) {
@@ -63,6 +70,7 @@ public class UserService {
             throw new ValidationException("Этот пользователь уже в друзьях!");
         }
         storage.addToFriends(user, addedUser);
+        eventDbStorage.addEventToFeed(userId, EventType.FRIEND, Operation.ADD, friendId);
     }
 
     public void deleteFromFriends(int userId, int friendId) {
@@ -72,6 +80,7 @@ public class UserService {
             throw new EntryNotFoundException("Пользователь с этим id не найден в списке друзей!");
         }
         storage.deleteFromFriends(user, friendUser);
+        eventDbStorage.addEventToFeed(userId, EventType.FRIEND, Operation.REMOVE, friendId);
     }
 
     public List<User> getFriendsList (int userId) {
@@ -101,6 +110,16 @@ public class UserService {
     private void applyLoginToName(User user) {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
+        }
+    }
+
+    public List<Event> getUsersFeed(int id) {
+        try {
+            return eventDbStorage.getUsersFeed(id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntryNotFoundException("В базе отсутствует запись c id: " + id);
+        } catch (NullPointerException e) {
+            throw new EntryNotFoundException("Что-то пошло не так в базе данных.");
         }
     }
 }
