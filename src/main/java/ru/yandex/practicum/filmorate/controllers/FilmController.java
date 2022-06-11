@@ -69,4 +69,11 @@ public class FilmController {
         filmService.deleteLike(id, userId);
         log.info("Пользователь id: " + userId + " удалил лайк фильму id: " + id);
     }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam int userId, @RequestParam int friendId) {
+        log.info("Пользователь id: " + userId + " запросил список общих фильмов" +
+                " с другом id: " + friendId);
+        return filmService.getCommonFilms(userId, friendId);
+    }
 }

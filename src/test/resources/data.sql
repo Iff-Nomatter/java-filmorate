@@ -19,6 +19,7 @@ INSERT INTO FILM
 VALUES
     ('Pulp Friction', 'about friction and pulp', '1993-5-22', 180, 4),
     ('Titanic', 'underwater drama', '1991-3-15', 150, 3),
+    ('Star Wars: Episode I – The Phantom Menace', 'the first episode of the saga', '1999-7-29', 136, 2),
     ('Double Impact', 'Two brothers separated by the violence. Now together in a mission of revenge', '1991-7-31', 118, 4);
 
 INSERT INTO FILM_GENRE

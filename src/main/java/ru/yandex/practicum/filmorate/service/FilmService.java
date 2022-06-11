@@ -6,7 +6,9 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.EventDbStorage;
 import ru.yandex.practicum.filmorate.exceptions.EntryNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.enumerations.EventType;
 import ru.yandex.practicum.filmorate.model.enumerations.Operation;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -89,5 +91,15 @@ public class FilmService {
                 .sorted(likeAmountComparator.reversed())
                 .limit(limit)
                 .collect(Collectors.toList());
+    }
+
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        User user = userStorage.getUserById(userId);
+        User friend = userStorage.getUserById(friendId);
+        if (!user.getFriendSet().containsKey(friend.getId())) {
+            throw new ValidationException("Пользователь с id: " + friendId +
+                    " не является другом пользователя с id: " + userId);
+        }
+        return storage.getCommonFilms(userId, friendId);
     }
 }
