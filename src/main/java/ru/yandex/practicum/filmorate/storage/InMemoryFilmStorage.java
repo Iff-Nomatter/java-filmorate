@@ -4,6 +4,8 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Component
 public class InMemoryFilmStorage extends InMemoryStorage<Film> implements FilmStorage {
@@ -47,5 +49,28 @@ public class InMemoryFilmStorage extends InMemoryStorage<Film> implements FilmSt
     @Override
     public Film getFilmById(int id) {
         return getById(id);
+    }
+
+    @Override
+    public List<Film> getPopular(String genre, Integer year) {
+        Predicate<Film> genreFilter;
+        if (genre != null) {
+            genreFilter = film -> film.getGenre().stream()
+                    .anyMatch(filmGenre -> filmGenre.getName().equals(genre));
+        } else {
+            genreFilter = film -> true;
+        }
+
+        Predicate<Film> yearFilter;
+        if (year != null) {
+            yearFilter = film -> film.getReleaseDate().getYear() == year;
+        } else {
+            yearFilter = film -> true;
+        }
+
+        return getAllFilms().stream()
+                .filter(genreFilter)
+                .filter(yearFilter)
+                .collect(Collectors.toList());
     }
 }

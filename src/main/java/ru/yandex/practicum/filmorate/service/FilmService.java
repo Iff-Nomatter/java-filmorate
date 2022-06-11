@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -74,14 +75,11 @@ public class FilmService {
         storage.deleteLike(film, userId);
     }
     
-    public List<Film> getTopByLikes(Integer count) {
-        if (count == null || count <= 0) {
-            count = 10;
-        }
+    public List<Film> getTopByLikes(Integer limit, String genre, Integer year) {
         Comparator<Film> likeAmountComparator = Comparator.comparingInt(o -> o.getLikeSet().size());
-        return storage.getAllFilms().stream()
+        return storage.getPopular(genre, year).stream()
                 .sorted(likeAmountComparator.reversed())
-                .limit(count)
+                .limit(limit)
                 .collect(Collectors.toList());
     }
 }
