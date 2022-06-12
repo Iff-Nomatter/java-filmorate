@@ -11,7 +11,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @EqualsAndHashCode(callSuper = true)
@@ -25,7 +25,7 @@ public class Film extends IdHolder{
     private LocalDate releaseDate;
     @Min(value = 1, message = "не может быть отрицательна или равна нулю")
     private int duration;
-    private List <FilmGenre> genre;
+    private LinkedHashSet<FilmGenre> genres;
     @Valid
     @NotNull
     private FilmRating mpa;

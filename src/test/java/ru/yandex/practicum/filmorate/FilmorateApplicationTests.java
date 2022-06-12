@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate;
 
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
@@ -9,9 +10,11 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dao.EventDbStorage;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
@@ -19,6 +22,10 @@ import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @SpringBootTest
@@ -29,6 +36,8 @@ class FilmorateApplicationTests {
 	private final UserService userStorage;
 	private final FilmService filmStorage;
 	private final EventDbStorage eventDbStorage;
+	private final JdbcTemplate jdbcTemplate;
+
 
 	@Test
 	public void testFindUserById() {
@@ -216,5 +225,79 @@ class FilmorateApplicationTests {
 				Assertions.assertEquals("Titanic",commonFilms.get(i).getName());
 			}
 		}
+	}
+
+	@Test
+	public void testFilmRemove() {
+		Film filmForDeletion = new Film();
+		LinkedHashSet<FilmGenre> filmForDeletionGenre = new LinkedHashSet<>();
+		FilmGenre genre1 = new FilmGenre();
+		genre1.setId(1);
+		FilmGenre genre2 = new FilmGenre();
+		genre2.setId(5);
+		filmForDeletionGenre.add(genre1);
+		filmForDeletionGenre.add(genre2);
+		filmForDeletion.setGenres(filmForDeletionGenre);
+		FilmRating filmForDeletionRating = new FilmRating();
+		filmForDeletionRating.setId(3);
+		Set<Integer> filmForDeletionLikeSet = new HashSet<>();
+		filmForDeletionLikeSet.add(1);
+		filmForDeletionLikeSet.add(2);
+		filmForDeletion.setMpa(filmForDeletionRating);
+		filmForDeletion.setDescription("something");
+		filmForDeletion.setName("whatever");
+		filmForDeletion.setDuration(160);
+		filmForDeletion.setReleaseDate(LocalDate.of(2000, 3, 15));
+		filmStorage.addFilm(filmForDeletion);
+		filmStorage.deleteFilm(3);
+		List<Film> allFilms = filmStorage.getAllFilms();
+		String selectLikes = "SELECT * FROM FILM_LIKE WHERE FILM_ID = ?";
+		Assertions.assertFalse(jdbcTemplate.queryForRowSet(selectLikes, 3).next());
+		String selectGenre = "SELECT * FROM FILM_GENRE WHERE FILM_ID = ?";
+		Assertions.assertFalse(jdbcTemplate.queryForRowSet(selectGenre, 3).next());
+		Assertions.assertEquals(2, allFilms.size());
+	}
+
+	@Test
+	public void testDeleteUser() {
+		User userForDeletion = new User();
+		userForDeletion.setName("someone");
+		userForDeletion.setLogin("someLogin");
+		userForDeletion.setEmail("some@e.mail");
+		userForDeletion.setBirthday(LocalDate.of(1990, 5, 18));
+		userStorage.addUser(userForDeletion);
+		userStorage.addToFriends(userForDeletion, userStorage.getUserById(1));
+		userStorage.addToFriends(userForDeletion, userStorage.getUserById(3));
+		userStorage.deleteUser(4);
+		String selectFriends = "SELECT * FROM USER_FRIEND WHERE USER_ID = ?";
+		Assertions.assertFalse(jdbcTemplate.queryForRowSet(selectFriends, 4).next());
+		List<User> allUsers = userStorage.getAllUsers();
+		Assertions.assertEquals(3, allUsers.size());
+	}
+
+	@Test
+	public void testGetAllRatings() {
+		Assertions.assertEquals(5, filmStorage.getAllRatings().size());
+	}
+
+	@Test
+	public void testGetRatingById() {
+		FilmRating expectedRating = new FilmRating();
+		expectedRating.setId(3);
+		expectedRating.setName("PG-13");
+		Assertions.assertEquals(expectedRating, filmStorage.getRatingById(3));
+	}
+
+	@Test
+	public void testGetAllGenres() {
+		Assertions.assertEquals(6, filmStorage.getAllGenres().size());
+	}
+
+	@Test
+	public void testGetGenreById() {
+		FilmGenre expectedGenre = new FilmGenre();
+		expectedGenre.setId(2);
+		expectedGenre.setName("Драма");
+		Assertions.assertEquals(expectedGenre, filmStorage.getGenreById(2));
 	}
 }

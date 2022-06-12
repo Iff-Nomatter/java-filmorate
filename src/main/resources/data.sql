@@ -10,23 +10,9 @@ VALUES
 MERGE INTO GENRE
                             (GENRE_ID, GENRE)
 VALUES
-                            (1, 'Action'),
-                            (2, 'Western'),
-                            (3, 'Gangster movie'),
+                            (1, 'Комедия'),
+                            (2, 'Драма'),
+                            (3, 'Мультфильм'),
                             (4, 'Detective'),
                             (5, 'Drama'),
-                            (6, 'Historical movie'),
-                            (7, 'Comedy'),
-                            (8, 'Melodrama'),
-                            (9, 'Musical movie'),
-                            (10, 'Noire'),
-                            (11, 'Political movie'),
-                            (12, 'Adventure movie'),
-                            (13, 'Tale'),
-                            (14, 'Tragedy'),
-                            (15, 'Tragic comedy'),
-                            (16, 'Thriller'),
-                            (17, 'Sci-fi  movie'),
-                            (18, 'Horror'),
-                            (19, 'Catastrophe movie'),
-                            (20, 'Fantasy');
+                            (6, 'Historical movie');

@@ -32,6 +32,8 @@ public class UserDbStorage implements UserStorage {
     final String USER_REMOVE_FRIEND = "DELETE FROM USER_FRIEND WHERE USER_ID = ? AND FRIEND_ID = ?";
     final String USER_REMOVE_FRIEND_FRIEND_PENDING = "UPDATE USER_FRIEND SET FRIENDSHIP_STATUS = ? " +
             "WHERE USER_ID = ? AND FRIEND_ID = ?";
+    final String USER_REMOVE = "DELETE FROM USERS WHERE USER_ID = ?";
+
     private final JdbcTemplate jdbcTemplate;
 
     public UserDbStorage(JdbcTemplate jdbcTemplate) {
@@ -73,6 +75,11 @@ public class UserDbStorage implements UserStorage {
                 user.getBirthday(),
                 user.getEmail(),
                 user.getId());
+    }
+
+    @Override
+    public void deleteUser(int userId) {
+        jdbcTemplate.update(USER_REMOVE, userId);
     }
 
     @Override

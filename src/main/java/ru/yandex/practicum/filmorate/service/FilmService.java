@@ -11,6 +11,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.enumerations.EventType;
 import ru.yandex.practicum.filmorate.model.enumerations.Operation;
+import ru.yandex.practicum.filmorate.model.FilmGenre;
+import ru.yandex.practicum.filmorate.model.FilmRating;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -51,7 +53,7 @@ public class FilmService {
         try {
             return storage.getFilmById(id);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntryNotFoundException("В базе отсутствует запись c id: " + id);
+            throw new EntryNotFoundException("В базе отсутствует фильм c id: " + id);
         } catch (NullPointerException e) {
             throw new EntryNotFoundException("Что-то пошло не так в базе данных.");
         }
@@ -61,7 +63,7 @@ public class FilmService {
         try {
             storage.updateFilm(film);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntryNotFoundException("В базе отсутствует запись c id: " + film.getId());
+            throw new EntryNotFoundException("В базе отсутствует фильм c id: " + film.getId());
         }
     }
 
@@ -101,5 +103,33 @@ public class FilmService {
                     " не является другом пользователя с id: " + userId);
         }
         return storage.getCommonFilms(userId, friendId);
+    }
+
+    public void deleteFilm(int filmId) {
+        storage.deleteFilm(filmId);
+    }
+
+    public List<FilmRating> getAllRatings() {
+        return storage.getAllRatings();
+    }
+
+    public FilmRating getRatingById(int ratingId) {
+        try {
+            return storage.getRatingById(ratingId);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntryNotFoundException("В базе отсутствует рейтинг c id: " + ratingId);
+        }
+    }
+
+    public List<FilmGenre> getAllGenres() {
+        return storage.getAllGenres();
+    }
+
+    public FilmGenre getGenreById(int genreId) {
+        try {
+            return storage.getGenreById(genreId);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntryNotFoundException("В базе отсутствует жанр c id: " + genreId);
+        }
     }
 }
