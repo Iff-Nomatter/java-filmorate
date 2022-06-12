@@ -11,8 +11,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.dao.EventDbStorage;
 import org.springframework.jdbc.core.JdbcTemplate;
-import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
-import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
@@ -24,7 +22,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -75,7 +72,13 @@ class FilmorateApplicationTests {
 	public void testDeleteFromFriends() {
 		User user = userStorage.getUserById(1);
 		User friend = userStorage.getUserById(2);
+		userStorage.addToFriends(user.getId(), friend.getId());
+		//заново запрашиваем, чтобы замаппились друзья
+		user = userStorage.getUserById(1);
+		friend = userStorage.getUserById(2);
+		Assertions.assertTrue(user.getFriendSet().containsKey(2));
 		userStorage.deleteFromFriends(user.getId(), friend.getId());
+		//снова запрашиваем ради обновления списка друзей
 		user = userStorage.getUserById(user.getId());
 		Assertions.assertFalse(user.getFriendSet().containsKey(2));
 	}
@@ -117,13 +120,14 @@ class FilmorateApplicationTests {
 	@Test
 	public void testAddLike() {
 		Film film = filmStorage.getFilmById(1);
-		filmStorage.addLike(film.getId(), 2);
+		filmStorage.addLike(film.getId(), 1);
 		film = filmStorage.getFilmById(1);
-		Assertions.assertTrue(film.getLikeSet().contains(2));
+		Assertions.assertTrue(film.getLikeSet().contains(1));
 	}
 
 	@Test
 	public void testDeleteLike() {
+		filmStorage.addLike(1, 2);
 		Film film = filmStorage.getFilmById(1);
 		filmStorage.deleteLike(film.getId(), 2);
 		film = filmStorage.getFilmById(1);
@@ -135,35 +139,26 @@ class FilmorateApplicationTests {
 		//получаем фильмы
 		Film filmFirst = filmStorage.getFilmById(1);
 		Film filmSecond = filmStorage.getFilmById(2);
-		//обнуляем лайки
-		filmStorage.deleteLike(filmFirst,1);
-		filmStorage.deleteLike(filmFirst,2);
-		filmStorage.deleteLike(filmSecond,1);
-		filmStorage.deleteLike(filmSecond,2);
 		//ставим лайки
-		filmStorage.addLike(filmFirst, 1);
-		filmStorage.addLike(filmFirst, 2);
-		filmStorage.addLike(filmSecond, 1);
+		filmStorage.addLike(filmFirst.getId(), 1);
+		filmStorage.addLike(filmFirst.getId(), 2);
+		filmStorage.addLike(filmSecond.getId(), 1);
 		//инициализируем параметры
 		String genre = null;
 		Integer year = null;
 		//выводим без фильтров
-		Assertions.assertEquals(3, filmStorage.getPopular(genre, year).size());
-		Assertions.assertEquals(1, filmStorage.getPopular(genre, year).get(0).getId());
+		Assertions.assertEquals(4, filmStorage.getTopByLikes(10, genre, year).size());
 		//выводим с фильтром по году
 		year = 1991;
-		Assertions.assertEquals(2, filmStorage.getPopular(genre, year).size());
-		Assertions.assertEquals(2, filmStorage.getPopular(genre, year).get(0).getId());
+		Assertions.assertEquals(2, filmStorage.getTopByLikes(10, genre, year).size());
 		//выводим с фильтром по жанру
 		year = null;
-		genre = "Gangster movie";
-		Assertions.assertEquals(2, filmStorage.getPopular(genre, year).size());
-		Assertions.assertEquals(1, filmStorage.getPopular(genre, year).get(0).getId());
+		genre = "Мультфильм";
+		Assertions.assertEquals(2, filmStorage.getTopByLikes(10, genre, year).size());
 		//выводим с филтрами по жанру и по году
 		year = 1991;
-		genre = "Gangster movie";
-		Assertions.assertEquals(1, filmStorage.getPopular(genre, year).size());
-		Assertions.assertEquals(3, filmStorage.getPopular(genre, year).get(0).getId());
+		genre = "Фантастика";
+		Assertions.assertEquals(1, filmStorage.getTopByLikes(10, genre, year).size());
 	}
 
 	@Test
@@ -201,16 +196,16 @@ class FilmorateApplicationTests {
 		Film secondFilm = filmStorage.getFilmById(2);
 		Film thirdFilm = filmStorage.getFilmById(3);
 		// Первый пользователь добавляет в друзья второго
-		userStorage.addToFriends(firstUser, secondUser);
+		userStorage.addToFriends(firstUser.getId(), secondUser.getId());
 		// Лайки для первого фильма
-		filmStorage.addLike(firstFilm, firstUser.getId());
-		filmStorage.addLike(firstFilm, secondUser.getId());
-		filmStorage.addLike(firstFilm, thirdUser.getId());
+		filmStorage.addLike(firstFilm.getId(), firstUser.getId());
+		filmStorage.addLike(firstFilm.getId(), secondUser.getId());
+		filmStorage.addLike(firstFilm.getId(), thirdUser.getId());
 		// Лайки для второго фильма
-		filmStorage.addLike(secondFilm, firstUser.getId());
-		filmStorage.addLike(secondFilm, secondUser.getId());
+		filmStorage.addLike(secondFilm.getId(), firstUser.getId());
+		filmStorage.addLike(secondFilm.getId(), secondUser.getId());
 		// Лайк для третьего фильма
-		filmStorage.addLike(thirdFilm, firstUser.getId());
+		filmStorage.addLike(thirdFilm.getId(), firstUser.getId());
 		// Вызываем метод getCommonFilms
 		List<Film> commonFilms = filmStorage.getCommonFilms(firstUser.getId(), secondUser.getId());
 		// Проверяем, что в листе всего 2 фильма
@@ -255,7 +250,7 @@ class FilmorateApplicationTests {
 		Assertions.assertFalse(jdbcTemplate.queryForRowSet(selectLikes, 3).next());
 		String selectGenre = "SELECT * FROM FILM_GENRE WHERE FILM_ID = ?";
 		Assertions.assertFalse(jdbcTemplate.queryForRowSet(selectGenre, 3).next());
-		Assertions.assertEquals(2, allFilms.size());
+		Assertions.assertEquals(4, allFilms.size());
 	}
 
 	@Test
@@ -266,8 +261,8 @@ class FilmorateApplicationTests {
 		userForDeletion.setEmail("some@e.mail");
 		userForDeletion.setBirthday(LocalDate.of(1990, 5, 18));
 		userStorage.addUser(userForDeletion);
-		userStorage.addToFriends(userForDeletion, userStorage.getUserById(1));
-		userStorage.addToFriends(userForDeletion, userStorage.getUserById(3));
+		userStorage.addToFriends(userForDeletion.getId(), 1);
+		userStorage.addToFriends(userForDeletion.getId(), 3);
 		userStorage.deleteUser(4);
 		String selectFriends = "SELECT * FROM USER_FRIEND WHERE USER_ID = ?";
 		Assertions.assertFalse(jdbcTemplate.queryForRowSet(selectFriends, 4).next());
