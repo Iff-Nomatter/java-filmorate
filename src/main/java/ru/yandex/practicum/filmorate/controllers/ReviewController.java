@@ -30,7 +30,7 @@ public class ReviewController {
     }
 
     @GetMapping("/{id}")
-    public Optional<FilmReview> getById(@PathVariable int id) {
+    public FilmReview getById(@PathVariable int id) {
         return reviewService.getById(id);
     }
 

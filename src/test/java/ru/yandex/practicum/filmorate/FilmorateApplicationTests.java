@@ -359,22 +359,22 @@ class FilmorateApplicationTests {
 		//Ставим Like
 		reviewStorage.addLike(reviewId, 1, true);
 		//Получаем отзыв из базы
-		reviewFromStorage = reviewStorage.get(reviewId).orElseThrow();
+		reviewFromStorage = reviewStorage.get(reviewId);
 		Assertions.assertEquals(reviewFromStorage.getUseful(), 1);
 
 		//Ставим еще Like от другого пользователя
 		reviewStorage.addLike(reviewId, 2, true);
-		reviewFromStorage = reviewStorage.get(reviewId).orElseThrow();
+		reviewFromStorage = reviewStorage.get(reviewId);
 		Assertions.assertEquals(reviewFromStorage.getUseful(), 2);
 
 		//Ставим Dislike
 		reviewStorage.addLike(reviewId, 3, false);
-		reviewFromStorage = reviewStorage.get(reviewId).orElseThrow();
+		reviewFromStorage = reviewStorage.get(reviewId);
 		Assertions.assertEquals(reviewFromStorage.getUseful(), 1);
 
 		//Удаляем Like
 		reviewStorage.removeLike(reviewId, 2);
-		reviewFromStorage = reviewStorage.get(reviewId).orElseThrow();
+		reviewFromStorage = reviewStorage.get(reviewId);
 		Assertions.assertEquals(reviewFromStorage.getUseful(), 0);
 	}
 
@@ -396,19 +396,19 @@ class FilmorateApplicationTests {
 
 		//Удаляем Like
 		reviewStorage.removeLike(reviewId, 1);
-		reviewFromStorage = reviewStorage.get(reviewId).orElseThrow();
+		reviewFromStorage = reviewStorage.get(reviewId);
 
 		//Индекс полезности уменьшится на 1 так как это был удален Like
 		Assertions.assertEquals(reviewFromStorage.getUseful(), 2);
 
 		//Ставим Dislike Индекс полезности уменьшится на 1
 		reviewStorage.addLike(reviewId, 1, false);
-		reviewFromStorage = reviewStorage.get(reviewId).orElseThrow();
+		reviewFromStorage = reviewStorage.get(reviewId);
 		Assertions.assertEquals(reviewFromStorage.getUseful(), 1);
 
 		//Уаляем Dislike индекс увеличивается на 1
 		reviewStorage.removeLike(reviewId, 1);
-		reviewFromStorage = reviewStorage.get(reviewId).orElseThrow();
+		reviewFromStorage = reviewStorage.get(reviewId);
 		Assertions.assertEquals(reviewFromStorage.getUseful(), 2);
 
 	}

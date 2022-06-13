@@ -64,18 +64,14 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void remove(int id) {
-        get(id).orElseThrow(() -> new EntryNotFoundException(String.format("FilmReview %s not found", id)));
+        get(id);
         String sqlQuery = "DELETE FROM film_review WHERE id = ?";
         jdbcTemplate.update(sqlQuery, id);
     }
 
     @Override
     public FilmReview update(FilmReview reviewToUpdate) {
-        FilmReview filmReview = get(reviewToUpdate.getReviewId())
-                .orElseThrow(() -> new EntryNotFoundException(
-                        String.format("FilmReview %s not found", reviewToUpdate.getReviewId())
-                ));
-
+        FilmReview filmReview = get(reviewToUpdate.getReviewId());
         filmReview.setFilmId(reviewToUpdate.getFilmId());
         filmReview.setUserId(reviewToUpdate.getUserId());
         filmReview.setContent(reviewToUpdate.getContent());
@@ -91,14 +87,14 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public Optional<FilmReview> get(int id) {
+    public FilmReview get(int id) {
         try {
             FilmReview filmReview;
             String sqlQuery = "SELECT * " +
                     "FROM film_review " +
                     "WHERE id = ?";
             filmReview = jdbcTemplate.queryForObject(sqlQuery, new FilmReviewRowMapper(), id);
-            return Optional.ofNullable(filmReview);
+            return filmReview;
         } catch (EmptyResultDataAccessException e) {
             throw new EntryNotFoundException(String.format("FilmReview %s not found", id));
         }
@@ -113,9 +109,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public FilmReview addLike(int id, int userId, boolean isPositive) {
-        FilmReview filmReview = get(id).orElseThrow(() -> new EntryNotFoundException(
-                String.format("FilmReview %s not found", id)
-        ));
+        FilmReview filmReview = get(id);
         userStorage.getUserById(userId);
 
         String sqlQuery = "INSERT INTO review_like(film_review_id, user_id, is_positive) " +
@@ -134,9 +128,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public FilmReview updateLike(int id, int userId, boolean isPositive) {
-        FilmReview filmReview = get(id).orElseThrow(() -> new EntryNotFoundException(
-                String.format("FilmReview %s not found", id)
-        ));
+        FilmReview filmReview = get(id);
         userStorage.getUserById(userId);
         String sqlQuery = "UPDATE review_like SET is_positive = ? " +
                 "WHERE film_review_id = ? AND user_id = ?";
@@ -165,9 +157,7 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public FilmReview removeLike(int id, int userId) {
         getLike(id, userId);
-        FilmReview filmReview = get(id).orElseThrow(() -> new EntryNotFoundException(
-                String.format("FilmReview %s not found", id)
-        ));
+        FilmReview filmReview = get(id);
         String sqlQuery = "DELETE FROM review_like WHERE film_review_id = ? AND user_id = ?";
         jdbcTemplate.update(sqlQuery, id, userId);
 
