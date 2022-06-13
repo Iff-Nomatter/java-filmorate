@@ -166,6 +166,18 @@ class FilmorateApplicationTests {
 		Assertions.assertEquals(1, filmStorage.getTopByLikes(10, genre, year).size());
 	}
 
+	public void testSearchFilm() {
+		Film film = filmStorage.getFilmById(1);
+		String query = film.getName().substring(1,4).toUpperCase();
+		List<Film> search = filmStorage.search(query);
+		Assertions.assertTrue(search.contains(film));
+
+		film.setName("New YYYY");
+		filmStorage.updateFilm(film);
+		search = filmStorage.search(query);
+		Assertions.assertFalse(search.contains(film));
+	}
+
 	@Test
 	public void testGetAllFilms() {
 		Assertions.assertNotNull(filmStorage.getAllFilms());
