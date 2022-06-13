@@ -5,7 +5,6 @@ import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
 
 import java.util.List;
-import java.util.Set;
 
 public interface FilmStorage {
 
@@ -35,7 +34,7 @@ public interface FilmStorage {
 
     List<Film> getCommonFilms(int userId, int friendId);
 
-    List<Film> search(String query);
+    List<Film> search(String query, SearchMode mode);
 
     List<Film> getByDirector(int directorId);
 }

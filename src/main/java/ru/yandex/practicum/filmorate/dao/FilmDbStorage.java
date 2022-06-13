@@ -10,8 +10,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmDirector;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
-import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.SearchMode;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
@@ -62,7 +62,15 @@ public class FilmDbStorage implements FilmStorage {
             "INNER JOIN (SELECT * FROM FILM_LIKE WHERE USER_ID = ?) as b on a.FILM_ID = b.FILM_ID))" +
             " GROUP BY FILM_ID ORDER BY COUNT(FILM_ID) desc)";
 
-    final String FILM_SEARCH = "select * from film WHERE LOWER(name) LIKE LOWER(?)";
+    final String FILM_SEARCH_BY_NAME = "SELECT * FROM FILM WHERE LOWER(name) LIKE LOWER(?)";
+    final String FILM_SEARCH_BY_DIRECTOR = "SELECT f.* FROM FILM AS F " +
+            "LEFT JOIN FILM_DIRECTOR AS fd ON f.DIRECTOR_ID = fd.DIRECTOR_ID " +
+            "WHERE LOWER(fd.NAME) LIKE LOWER(?)";
+
+    final String FILM_SEARCH_BY_NAME_OR_DIRECTOR = "SELECT f.* FROM FILM AS F " +
+            "LEFT JOIN FILM_DIRECTOR AS fd ON f.DIRECTOR_ID = fd.DIRECTOR_ID " +
+            "WHERE LOWER(fd.NAME) LIKE LOWER(?) OR LOWER(f.NAME) LIKE LOWER(?)";
+
     final String FILM_BY_DIRECTOR_REQUEST = "SELECT * FROM FILM WHERE DIRECTOR_ID = ?";
     final String FILM_DIRECTOR_REQUEST = "SELECT * FROM FILM_DIRECTOR " +
             "WHERE DIRECTOR_ID = (SELECT DIRECTOR_ID FROM FILM WHERE FILM_ID = ?)";
@@ -248,9 +256,23 @@ public class FilmDbStorage implements FilmStorage {
         return film;
     }
 
-    public List<Film> search(String query) {
+    public List<Film> search(String query, SearchMode mode) {
         String term = "%" + query + "%";
-        List<Film> allFilms = jdbcTemplate.query(FILM_SEARCH, new FilmRowMapper(), term);
+        List<Film> allFilms;
+        switch (mode) {
+            case SEARCH_BY_TITLE:
+                allFilms = jdbcTemplate.query(FILM_SEARCH_BY_NAME, new FilmRowMapper(), term);
+                break;
+            case SEARCH_BY_DIRECTOR:
+                allFilms = jdbcTemplate.query(FILM_SEARCH_BY_DIRECTOR, new FilmRowMapper(), term);
+                break;
+            case SEARCH_BY_TITLE_OR_DIRECTOR:
+                allFilms = jdbcTemplate.query(FILM_SEARCH_BY_NAME_OR_DIRECTOR, new FilmRowMapper(), term, term);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown search mode");
+        }
+
         for (Film film : allFilms) {
             mapFilmProperties(film);
         }
