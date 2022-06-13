@@ -41,7 +41,7 @@ public class FilmDbStorage implements FilmStorage {
     final String FILM_GENRE_REQUEST = "select G.* from FILM_GENRE as FG inner join GENRE as G " +
             "ON FG.GENRE_ID = G.GENRE_ID where FG.FILM_ID = ?";
     final String FILM_INSERT = "INSERT INTO FILM (NAME, DESCRIPTION, RELEASE_DATE, " +
-            "DURATION, RATING) VALUES (?, ?, ?, ?, ?)";
+            "DURATION, RATING, DIRECTOR_ID) VALUES (?, ?, ?, ?, ?, ?)";
     final String FILM_GENRE_INSERT = "MERGE INTO FILM_GENRE (FILM_ID, GENRE_ID) VALUES (?, ?)";
     final String FILM_GENRE_DELETE = "DELETE FROM FILM_GENRE WHERE FILM_ID = ?";
     final String FILM_LIKES_INSERT = "INSERT INTO FILM_LIKE (FILM_ID, USER_ID) VALUES (?, ?)";
@@ -83,6 +83,7 @@ public class FilmDbStorage implements FilmStorage {
             ps.setDate(3, java.sql.Date.valueOf(film.getReleaseDate()));
             ps.setInt(4, film.getDuration());
             ps.setInt(5, film.getMpa().getId());
+            ps.setInt(6, film.getDirector().getId());
             return ps;
         }, keyHolder);
         film.setId((Integer) keyHolder.getKey());
@@ -218,7 +219,6 @@ public class FilmDbStorage implements FilmStorage {
         return commonFilms;
     }
 
-    private Film mapFilmProperties(Film film) {
     @Override
     public List<Film> getByDirector(int directorId) {
         return jdbcTemplate.query(FILM_BY_DIRECTOR_REQUEST, new FilmRowMapper(), directorId).stream()
@@ -242,6 +242,9 @@ public class FilmDbStorage implements FilmStorage {
                 new FilmLikeRowMapper(), film.getId()));
         film.setLikeSet(filmLikeSet);
 
+        FilmDirector filmDirector = jdbcTemplate.queryForObject(FILM_DIRECTOR_REQUEST,
+                new FilmDirectorRowMapper(), film.getId());
+        film.setDirector(filmDirector);
         return film;
     }
 
@@ -252,10 +255,5 @@ public class FilmDbStorage implements FilmStorage {
             mapFilmProperties(film);
         }
         return allFilms;
-
-        FilmDirector filmDirector = jdbcTemplate.queryForObject(FILM_DIRECTOR_REQUEST,
-                new FilmDirectorRowMapper(), film.getId());
-        film.setDirector(filmDirector);
-        return film;
     }
 }

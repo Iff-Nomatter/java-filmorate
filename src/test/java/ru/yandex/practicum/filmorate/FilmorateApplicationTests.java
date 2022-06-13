@@ -8,13 +8,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.yandex.practicum.filmorate.dao.DirectorDbStorage;
-import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
-import ru.yandex.practicum.filmorate.dao.ReviewDbStorage;
-import ru.yandex.practicum.filmorate.dao.UserDbStorage;
-import ru.yandex.practicum.filmorate.dao.EventDbStorage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.yandex.practicum.filmorate.dao.DirectorDbStorage;
+import ru.yandex.practicum.filmorate.dao.ReviewDbStorage;
+import ru.yandex.practicum.filmorate.dao.EventDbStorage;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmDirector;
@@ -25,7 +23,6 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.List;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -170,6 +167,7 @@ class FilmorateApplicationTests {
 		Assertions.assertEquals(1, filmStorage.getTopByLikes(10, genre, year).size());
 	}
 
+	@Test
 	public void testSearchFilm() {
 		Film film = filmStorage.getFilmById(1);
 		String query = film.getName().substring(1,4).toUpperCase();
@@ -264,13 +262,16 @@ class FilmorateApplicationTests {
 		filmForDeletion.setName("whatever");
 		filmForDeletion.setDuration(160);
 		filmForDeletion.setReleaseDate(LocalDate.of(2000, 3, 15));
+		FilmDirector director = new FilmDirector();
+		director.setId(1);
+		filmForDeletion.setDirector(director);
 		filmStorage.addFilm(filmForDeletion);
-		filmStorage.deleteFilm(3);
+		filmStorage.deleteFilm(4);
 		List<Film> allFilms = filmStorage.getAllFilms();
 		String selectLikes = "SELECT * FROM FILM_LIKE WHERE FILM_ID = ?";
-		Assertions.assertFalse(jdbcTemplate.queryForRowSet(selectLikes, 3).next());
+		Assertions.assertFalse(jdbcTemplate.queryForRowSet(selectLikes, 4).next());
 		String selectGenre = "SELECT * FROM FILM_GENRE WHERE FILM_ID = ?";
-		Assertions.assertFalse(jdbcTemplate.queryForRowSet(selectGenre, 3).next());
+		Assertions.assertFalse(jdbcTemplate.queryForRowSet(selectGenre, 4).next());
 		Assertions.assertEquals(4, allFilms.size());
 	}
 
@@ -507,11 +508,14 @@ class FilmorateApplicationTests {
 		//задаём id
 		int id = 3;
 		//проверяем, что такой режиссёр в базе есть
-		Assertions.assertTrue(directorStorage.getDirector(id) != null);
+		FilmDirector director = directorStorage.getDirector(id);
 		//удаляем
 		directorStorage.deleteDirector(id);
 		//проверяем отсутсвтие в базе режиссёра
-		Assertions.assertNull(directorStorage.getDirector(id));
+		List<FilmDirector> directorList = directorStorage.getAllDirectors();
+		Assertions.assertFalse(directorList.contains(director));
+		//Assertions.assertFalse(directorList.stream()
+		//		.anyMatch(filmDirector -> filmDirector.getId() == id));
 	}
 
 	@Test
@@ -534,7 +538,7 @@ class FilmorateApplicationTests {
 		//задаём id режиссёра
 		int id = 1;
 		//получаем из базы
-		List<Film> loadedFilms = filmStorage.getByDirector(1);
-		Assertions.assertEquals(loadedFilms.size(), 2);
+		List<Film> loadedFilms = filmStorage.getByDirector(3, "year");
+		Assertions.assertEquals(2, loadedFilms.size());
 	}
 }
