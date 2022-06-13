@@ -163,21 +163,9 @@ class FilmorateApplicationTests {
 		Assertions.assertEquals(2, filmStorage.getTopByLikes(10, genre, year).size());
 		//выводим с филтрами по жанру и по году
 		year = 1991;
-		genre = "Фантастика";
-		Assertions.assertEquals(1, filmStorage.getTopByLikes(10, genre, year).size());
-	}
-
-	@Test
-	public void testSearchFilm() {
-		Film film = filmStorage.getFilmById(1);
-		String query = film.getName().substring(1,4).toUpperCase();
-		List<Film> search = filmStorage.search(query);
-		Assertions.assertTrue(search.contains(film));
-
-		film.setName("New YYYY");
-		filmStorage.updateFilm(film);
-		search = filmStorage.search(query);
-		Assertions.assertFalse(search.contains(film));
+		genre = "Gangster movie";
+		Assertions.assertEquals(1, filmStorage.getPopular(genre, year).size());
+		Assertions.assertEquals(3, filmStorage.getPopular(genre, year).get(0).getId());
 	}
 
 	@Test
