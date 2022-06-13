@@ -17,6 +17,13 @@ MERGE INTO GENRE
         (5, 'Фантастика'),
         (6, 'Документальный');
 
+INSERT INTO FILM_DIRECTOR
+(NAME)
+VALUES
+    ('Director_1'),
+    ('Director_2'),
+    ('Director_3');
+
 INSERT INTO USERS
     (NAME, LOGIN, BIRTHDAY, EMAIL)
 VALUES
@@ -37,13 +44,6 @@ VALUES
     (1, 3),
     (2, 5),
     (3, 3);
-
-INSERT INTO FILM_DIRECTOR
-    (NAME)
-VALUES
-    ('Director_1'),
-    ('Director_2'),
-    ('Director_3');
 
 
 
