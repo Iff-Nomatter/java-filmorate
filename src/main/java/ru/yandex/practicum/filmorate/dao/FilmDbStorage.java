@@ -5,13 +5,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dao.mappers.FilmGenreRowMapper;
-import ru.yandex.practicum.filmorate.dao.mappers.FilmLikeRowMapper;
-import ru.yandex.practicum.filmorate.dao.mappers.FilmRatingRowMapper;
-import ru.yandex.practicum.filmorate.dao.mappers.FilmRowMapper;
+import ru.yandex.practicum.filmorate.dao.mappers.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmDirector;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.PreparedStatement;
@@ -24,6 +23,7 @@ import java.util.stream.Collectors;
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
+
     final String FILM_REQUEST = "SELECT * FROM FILM WHERE FILM_ID = ?";
     final String FILM_ALL_REQUEST = "select * from FILM";
     final String FILM_YEAR_FILTER_REQUEST = "SELECT * FROM film " +
@@ -63,6 +63,9 @@ public class FilmDbStorage implements FilmStorage {
             " GROUP BY FILM_ID ORDER BY COUNT(FILM_ID) desc)";
 
     final String FILM_SEARCH = "select * from film WHERE LOWER(name) LIKE LOWER(?)";
+    final String FILM_BY_DIRECTOR_REQUEST = "SELECT * FROM FILM WHERE DIRECTOR_ID = ?";
+    final String FILM_DIRECTOR_REQUEST = "SELECT * FROM FILM_DIRECTOR " +
+            "WHERE DIRECTOR_ID = (SELECT DIRECTOR_ID FROM FILM WHERE FILM_ID = ?)";
 
     public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -205,6 +208,7 @@ public class FilmDbStorage implements FilmStorage {
         return film;
     }
 
+
     @Override
     public List<Film> getCommonFilms(int userId, int friendId) {
         List<Film> commonFilms = jdbcTemplate.query(GET_COMMON_FILMS_REQUEST, new FilmRowMapper(), userId, friendId);
@@ -212,6 +216,14 @@ public class FilmDbStorage implements FilmStorage {
             mapFilmProperties(film);
         }
         return commonFilms;
+    }
+
+    private Film mapFilmProperties(Film film) {
+    @Override
+    public List<Film> getByDirector(int directorId) {
+        return jdbcTemplate.query(FILM_BY_DIRECTOR_REQUEST, new FilmRowMapper(), directorId).stream()
+                .map(this::mapFilmProperties)
+                .collect(Collectors.toList());
     }
 
     private Film mapFilmProperties(Film film) {
@@ -240,5 +252,10 @@ public class FilmDbStorage implements FilmStorage {
             mapFilmProperties(film);
         }
         return allFilms;
+
+        FilmDirector filmDirector = jdbcTemplate.queryForObject(FILM_DIRECTOR_REQUEST,
+                new FilmDirectorRowMapper(), film.getId());
+        film.setDirector(filmDirector);
+        return film;
     }
 }

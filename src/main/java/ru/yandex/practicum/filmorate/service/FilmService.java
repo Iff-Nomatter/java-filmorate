@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.EventDbStorage;
 import ru.yandex.practicum.filmorate.exceptions.EntryNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.FilmDirector;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.enumerations.EventType;
@@ -138,4 +139,19 @@ public class FilmService {
                 sorted(Comparator.comparingInt(o -> -o.getLikeSet().size()))
                 .collect(Collectors.toList());
     }
+
+    public List<Film> getByDirector(int directorId, String sortBy) {
+        Comparator<Film> comparator;
+        if (sortBy.equals("year")) {
+            comparator = Comparator.comparingInt(f -> f.getReleaseDate().getYear());
+        } else if (sortBy.equals("likes")) {
+            comparator = Comparator.comparingInt(f -> f.getLikeSet().size());
+        } else {
+            throw new IllegalArgumentException("Некорректное значение параметра sortBy: " + sortBy);
+        }
+        return storage.getByDirector(directorId).stream()
+                .sorted(comparator.reversed())
+                .collect(Collectors.toList());
+    }
+
 }
