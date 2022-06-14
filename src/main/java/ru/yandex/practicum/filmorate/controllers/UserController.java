@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -80,6 +81,12 @@ public class UserController {
     public void deleteFromFriends(@PathVariable int id, @PathVariable int friendId) {
         userService.deleteFromFriends(id, friendId);
         log.info("Пользователь id" + id + " удалил из друзей пользователя id" + friendId + " :(");
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<Film> getRecomendation(@PathVariable int id) {
+        log.info("Запрошены рекомендации для пользователя с id: " + id);
+        return userService.getRecomendation(id);
     }
 
     @DeleteMapping("/{userId}")

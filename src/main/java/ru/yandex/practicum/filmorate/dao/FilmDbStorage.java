@@ -25,6 +25,10 @@ public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
 
     final String FILM_REQUEST = "SELECT * FROM FILM WHERE FILM_ID = ?";
+
+    final String GET_ALL_USER_FILM_REQUEST = "SELECT f.* FROM FILM AS f " +
+            "JOIN FILM_LIKE AS fl ON f.FILM_ID=fl.FILM_ID " +
+            "WHERE fl.USER_ID = ?";
     final String FILM_ALL_REQUEST = "select * from FILM";
     final String FILM_YEAR_FILTER_REQUEST = "SELECT * FROM film " +
             "WHERE EXTRACT(YEAR FROM release_date::date) = ?";
@@ -279,4 +283,14 @@ public class FilmDbStorage implements FilmStorage {
         }
         return allFilms;
     }
+    @Override
+    public List<Film> getAllFilmsUser(int userId) {
+        List<Film> allUserFilms = jdbcTemplate.query(GET_ALL_USER_FILM_REQUEST, new FilmRowMapper(), userId);
+        for (Film film:allUserFilms){
+            mapFilmProperties(film);
+        }
+        return allUserFilms;
+    }
+
+
 }
