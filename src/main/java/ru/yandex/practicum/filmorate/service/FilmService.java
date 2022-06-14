@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.EventDbStorage;
 import ru.yandex.practicum.filmorate.exceptions.EntryNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-import ru.yandex.practicum.filmorate.model.FilmDirector;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.enumerations.EventType;
@@ -15,12 +14,10 @@ import ru.yandex.practicum.filmorate.model.enumerations.Operation;
 import ru.yandex.practicum.filmorate.model.FilmGenre;
 import ru.yandex.practicum.filmorate.model.FilmRating;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.SearchMode;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -134,8 +131,23 @@ public class FilmService {
         }
     }
 
-    public List<Film> search(String query) {
-        return storage.search(query).stream().
+    public List<Film> search(String query, List <String> by) {
+        SearchMode mode;
+        if (by == null) {
+            mode = SearchMode.SEARCH_BY_TITLE;
+        } else {
+            if (by.contains("director") && by.contains("title")) {
+                mode = SearchMode.SEARCH_BY_TITLE_OR_DIRECTOR;
+            } else if (by.contains("director")) {
+                mode = SearchMode.SEARCH_BY_DIRECTOR;
+            } else if (by.contains("title")) {
+                mode = SearchMode.SEARCH_BY_TITLE;
+            } else {
+                throw new IllegalArgumentException("Unknown search mode");
+            }
+        }
+
+        return storage.search(query, mode).stream().
                 sorted(Comparator.comparingInt(o -> -o.getLikeSet().size()))
                 .collect(Collectors.toList());
     }
