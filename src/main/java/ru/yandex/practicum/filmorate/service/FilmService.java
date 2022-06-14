@@ -131,18 +131,16 @@ public class FilmService {
         }
     }
 
-    public List<Film> search(String query, String by) {
+    public List<Film> search(String query, List <String> by) {
         SearchMode mode;
         if (by == null) {
             mode = SearchMode.SEARCH_BY_TITLE;
         } else {
-            List<String> modes = Arrays.stream(by.split(",")).collect(Collectors.toList());
-
-            if (modes.contains("director") && modes.contains("title")) {
+            if (by.contains("director") && by.contains("title")) {
                 mode = SearchMode.SEARCH_BY_TITLE_OR_DIRECTOR;
-            } else if (modes.contains("director")) {
+            } else if (by.contains("director")) {
                 mode = SearchMode.SEARCH_BY_DIRECTOR;
-            } else if (modes.contains("title")) {
+            } else if (by.contains("title")) {
                 mode = SearchMode.SEARCH_BY_TITLE;
             } else {
                 throw new IllegalArgumentException("Unknown search mode");

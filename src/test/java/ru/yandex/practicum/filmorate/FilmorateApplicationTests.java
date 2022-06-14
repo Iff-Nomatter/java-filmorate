@@ -171,25 +171,25 @@ class FilmorateApplicationTests {
 	public void testSearchFilmByName() {
 		Film film = filmStorage.getFilmById(1);
 		String query = film.getName().substring(1,4).toUpperCase();
-		List<Film> search = filmStorage.search(query, "title");
+		List<Film> search = filmStorage.search(query, List.of("title"));
 		Assertions.assertTrue(search.contains(film));
 
 		film.setName("New YYYY");
 		filmStorage.updateFilm(film);
-		search = filmStorage.search(query, "title");
+		search = filmStorage.search(query, List.of("title"));
 		Assertions.assertFalse(search.contains(film));
 	}
 
 	@Test
 	public void testSearchFilmByDirector() {
 		Film film = filmStorage.getFilmById(1);
-		String query = film.getDirector().getName().substring(1,3).toUpperCase();;
-		List<Film> search = filmStorage.search(query, "director");
+		String query = film.getDirector().getName().substring(1,3).toUpperCase();
+		List<Film> search = filmStorage.search(query, List.of("director"));
 		Assertions.assertTrue(search.contains(film));
 
 		film.getDirector().setName("{{{");
 		filmStorage.updateFilm(film);
-		search = filmStorage.search(query, "director");
+		search = filmStorage.search(query, List.of("director"));
 		Assertions.assertFalse(search.contains(film));
 	}
 
@@ -197,12 +197,12 @@ class FilmorateApplicationTests {
 	public void testSearchFilmByNameAndDirector() {
 		Film film = filmStorage.getFilmById(1);
 		String query = film.getName().substring(1,4).toUpperCase();
-		List<Film> search = filmStorage.search(query, "director,title");
+		List<Film> search = filmStorage.search(query, List.of("director", "title"));
 		Assertions.assertTrue(search.contains(film));
 
 		film.setName("New YYYY");
 		filmStorage.updateFilm(film);
-		search = filmStorage.search(query, "director,title");
+		search = filmStorage.search(query, List.of("director","title"));
 		Assertions.assertFalse(search.contains(film));
 	}
 
