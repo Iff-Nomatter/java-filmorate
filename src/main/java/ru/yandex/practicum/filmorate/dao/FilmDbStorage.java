@@ -46,7 +46,7 @@ public class FilmDbStorage implements FilmStorage {
     final String FILM_GENRE_DELETE = "DELETE FROM FILM_GENRE WHERE FILM_ID = ?";
     final String FILM_LIKES_INSERT = "INSERT INTO FILM_LIKE (FILM_ID, USER_ID) VALUES (?, ?)";
     final String FILM_UPDATE = "UPDATE FILM SET NAME = ?, DESCRIPTION = ?, RELEASE_DATE = ?, " +
-            "DURATION = ?, RATING = ? WHERE FILM_ID = ?";
+            "DURATION = ?, RATING = ?, DIRECTOR_ID = ? WHERE FILM_ID = ?";
     final String FILM_ADD_LIKE = "INSERT INTO FILM_LIKE SET FILM_ID = ?, USER_ID = ?";
     final String FILM_REMOVE_LIKE = "DELETE FROM FILM_LIKE WHERE FILM_ID = ? AND USER_ID = ?";
     final String FILM_REMOVE = "DELETE FROM FILM WHERE FILM_ID = ?";
@@ -138,6 +138,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getReleaseDate(),
                 film.getDuration(),
                 film.getMpa().getId(),
+                film.getDirector().getId(),
                 film.getId());
         addFilmGenreData(film);
     }
