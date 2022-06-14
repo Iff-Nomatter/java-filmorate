@@ -31,7 +31,7 @@ public class DirectorDbStorage implements DirectorStorage {
 
     @Override
     public void addDirector(FilmDirector director) {
-        jdbcTemplate.update(DIRECTOR_INSERT, director.getName(), director.getId());
+        jdbcTemplate.update(DIRECTOR_INSERT, director.getName());
     }
 
     @Override
