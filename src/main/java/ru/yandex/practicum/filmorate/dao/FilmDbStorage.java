@@ -45,12 +45,13 @@ public class FilmDbStorage implements FilmStorage {
     final String FILM_GENRE_REQUEST = "select G.* from FILM_GENRE as FG inner join GENRE as G " +
             "ON FG.GENRE_ID = G.GENRE_ID where FG.FILM_ID = ?";
     final String FILM_INSERT = "INSERT INTO FILM (NAME, DESCRIPTION, RELEASE_DATE, " +
-            "DURATION, RATING, DIRECTOR_ID) VALUES (?, ?, ?, ?, ?, ?)";
+            "DURATION, RATING) VALUES (?, ?, ?, ?, ?)";
     final String FILM_GENRE_INSERT = "MERGE INTO FILM_GENRE (FILM_ID, GENRE_ID) VALUES (?, ?)";
     final String FILM_GENRE_DELETE = "DELETE FROM FILM_GENRE WHERE FILM_ID = ?";
     final String FILM_LIKES_INSERT = "INSERT INTO FILM_LIKE (FILM_ID, USER_ID) VALUES (?, ?)";
     final String FILM_UPDATE = "UPDATE FILM SET NAME = ?, DESCRIPTION = ?, RELEASE_DATE = ?, " +
-            "DURATION = ?, RATING = ?, DIRECTOR_ID = ? WHERE FILM_ID = ?";
+            "DURATION = ?, RATING = ? WHERE FILM_ID = ?";
+    final String FILM_DIRECTOR_INSERT = "UPDATE FILM SET DIRECTOR_ID = ? WHERE FILM_ID = ?";
     final String FILM_ADD_LIKE = "INSERT INTO FILM_LIKE SET FILM_ID = ?, USER_ID = ?";
     final String FILM_REMOVE_LIKE = "DELETE FROM FILM_LIKE WHERE FILM_ID = ? AND USER_ID = ?";
     final String FILM_REMOVE = "DELETE FROM FILM WHERE FILM_ID = ?";
@@ -95,7 +96,6 @@ public class FilmDbStorage implements FilmStorage {
             ps.setDate(3, java.sql.Date.valueOf(film.getReleaseDate()));
             ps.setInt(4, film.getDuration());
             ps.setInt(5, film.getMpa().getId());
-            ps.setInt(6, film.getDirector().getId());
             return ps;
         }, keyHolder);
         film.setId((Integer) keyHolder.getKey());
@@ -103,6 +103,7 @@ public class FilmDbStorage implements FilmStorage {
         if (film.getLikeSet() != null && !film.getLikeSet().isEmpty()) {
             addFilmLikeData(film);
         }
+        addFilmDirectorData(film);
     }
 
     private void addFilmGenreData(Film film) {
@@ -133,6 +134,18 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+    private void addFilmDirectorData(Film film) {
+        if (film.getDirector() == null) {
+            return;
+        }
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(FILM_DIRECTOR_INSERT);
+            ps.setInt(1, film.getDirector().getId());
+            ps.setInt(2, film.getId());
+            return ps;
+        });
+    }
+
     @Override
     public void updateFilm(Film film) {
         getFilmById(film.getId()); //проверка на наличие записи в базе
@@ -142,9 +155,9 @@ public class FilmDbStorage implements FilmStorage {
                 film.getReleaseDate(),
                 film.getDuration(),
                 film.getMpa().getId(),
-                film.getDirector().getId(),
                 film.getId());
         addFilmGenreData(film);
+        addFilmDirectorData(film);
     }
 
     @Override
@@ -222,7 +235,6 @@ public class FilmDbStorage implements FilmStorage {
         return film;
     }
 
-
     @Override
     public List<Film> getCommonFilms(int userId, int friendId) {
         List<Film> commonFilms = jdbcTemplate.query(GET_COMMON_FILMS_REQUEST, new FilmRowMapper(), userId, friendId);
@@ -255,9 +267,11 @@ public class FilmDbStorage implements FilmStorage {
                 new FilmLikeRowMapper(), film.getId()));
         film.setLikeSet(filmLikeSet);
 
-        FilmDirector filmDirector = jdbcTemplate.queryForObject(FILM_DIRECTOR_REQUEST,
-                new FilmDirectorRowMapper(), film.getId());
-        film.setDirector(filmDirector);
+        if (film.getDirector().getId() != 0) {
+            FilmDirector filmDirector = jdbcTemplate.queryForObject(FILM_DIRECTOR_REQUEST,
+                    new FilmDirectorRowMapper(), film.getId());
+            film.setDirector(filmDirector);
+        }
         return film;
     }
 
