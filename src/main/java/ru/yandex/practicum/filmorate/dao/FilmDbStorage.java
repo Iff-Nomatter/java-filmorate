@@ -24,7 +24,8 @@ public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
-    final String FILM_REQUEST = "SELECT * FROM FILM WHERE FILM_ID = ?";
+    final String FILM_REQUEST = "select * from FILM as F inner join FILM_RATING as FR " +
+            "ON FR.RATING_ID = F.RATING where F.FILM_ID = ?";
 
     final String GET_ALL_USER_FILM_REQUEST = "SELECT f.* FROM FILM AS f " +
             "JOIN FILM_LIKE AS fl ON f.FILM_ID=fl.FILM_ID " +
@@ -252,10 +253,6 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private Film mapFilmProperties(Film film) {
-        FilmRating filmRating = jdbcTemplate.queryForObject(FILM_RATING_REQUEST,
-                new FilmRatingRowMapper(), film.getMpa().getId());
-        film.setMpa(filmRating);
-
         LinkedHashSet<FilmGenre> filmGenre = new LinkedHashSet<>(jdbcTemplate.query(FILM_GENRE_REQUEST,
                 new FilmGenreRowMapper(), film.getId()));
         if (filmGenre.isEmpty()) {
