@@ -30,14 +30,17 @@ public class FilmDbStorage implements FilmStorage {
     final String GET_ALL_USER_FILM_REQUEST = "SELECT f.* FROM FILM AS f " +
             "JOIN FILM_LIKE AS fl ON f.FILM_ID=fl.FILM_ID " +
             "WHERE fl.USER_ID = ?";
-    final String FILM_ALL_REQUEST = "select * from FILM";
-    final String FILM_YEAR_FILTER_REQUEST = "SELECT * FROM film " +
-            "WHERE EXTRACT(YEAR FROM release_date::date) = ?";
+    final String FILM_ALL_REQUEST = "select * from FILM as F inner join FILM_RATING as FR " +
+            "ON FR.RATING_ID = F.RATING";
+    final String FILM_YEAR_FILTER_REQUEST = "SELECT * FROM film as F inner join FILM_RATING as FR " +
+            "ON FR.RATING_ID = F.RATING WHERE EXTRACT(YEAR FROM f.RELEASE_DATE::date) = ?";
     final String FILM_GENRE_FILTER_REQUEST = "SELECT f.* FROM film AS f " +
+            "INNER JOIN FILM_RATING as FR ON FR.RATING_ID = F.RATING " +
             "JOIN film_genre AS fg ON f.film_id = fg.film_id " +
             "JOIN genre AS g ON fg.genre_id = g.genre_id " +
             "WHERE g.genre = ?";
     final String FILM_GENRE_YEAR_FILTER_REQUEST = "SELECT f.* FROM film AS f " +
+            "INNER JOIN FILM_RATING as FR ON FR.RATING_ID = F.RATING " +
             "JOIN film_genre AS fg ON f.film_id = fg.film_id " +
             "JOIN genre AS g ON fg.genre_id = g.genre_id " +
             "WHERE g.genre = ? AND EXTRACT(YEAR FROM release_date::date) = ?";
@@ -61,12 +64,11 @@ public class FilmDbStorage implements FilmStorage {
     final String GENRE_ALL_REQUEST = "SELECT * FROM GENRE";
     final String GENRE_REQUEST = "SELECT * FROM GENRE WHERE GENRE_ID = ?";
 
-    final String GET_COMMON_FILMS_REQUEST = "SELECT * FROM FILM WHERE FILM_ID IN " +
-            "(SELECT FILM_ID FROM FILM_LIKE WHERE FILM_ID IN " +
-            "(SELECT FILM.FILM_ID FROM FILM WHERE FILM_ID IN (SELECT a.FILM_ID FROM " +
-            "(SELECT * FROM FILM_LIKE WHERE USER_ID = ?) as a " +
-            "INNER JOIN (SELECT * FROM FILM_LIKE WHERE USER_ID = ?) as b on a.FILM_ID = b.FILM_ID))" +
-            " GROUP BY FILM_ID ORDER BY COUNT(FILM_ID) desc)";
+    final String GET_COMMON_FILMS_REQUEST = "select F.*, FR.MPA from FILM as F " +
+            "inner join FILM_LIKE as FL1 ON F.FILM_ID = FL1.FILM_ID " +
+            "inner join FILM_LIKE as FL2 ON F.FILM_ID = FL2.FILM_ID " +
+            "inner join FILM_RATING as FR on F.RATING = FR.RATING_ID " +
+            "where FL1.USER_ID = ? AND FL2.USER_ID = ?";
 
     final String FILM_SEARCH_BY_NAME = "SELECT * FROM FILM WHERE LOWER(name) LIKE LOWER(?)";
     final String FILM_SEARCH_BY_DIRECTOR = "SELECT f.* FROM FILM AS F " +

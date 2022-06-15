@@ -350,12 +350,12 @@ class FilmorateApplicationTests {
 		review.setFilmId(1);
 		review.setUserId(1);
 		review.setContent("Положительный отзыв на фильм");
-		review.setPositive(true);
+		review.setIsPositive(true);
 		FilmReview addReview = reviewStorage.create(review);
 		Assertions.assertEquals(addReview.getContent(), review.getContent());
 		Assertions.assertEquals(addReview.getFilmId(), review.getFilmId());
 		Assertions.assertEquals(addReview.getUserId(), review.getUserId());
-		Assertions.assertEquals(addReview.isPositive(), review.isPositive());
+		Assertions.assertEquals(addReview.getIsPositive(), review.getIsPositive());
 	}
 
 	@Test
@@ -364,17 +364,17 @@ class FilmorateApplicationTests {
 
 		int reviewId = addReviewForFilmId(1);
 
-		review.setReviewId(reviewId);
+		review.setId(reviewId);
 		review.setContent("Обновленный текст отзыва");
 		review.setFilmId(2);
 		review.setUserId(2);
-		review.setPositive(false);
+		review.setIsPositive(false);
 
 		FilmReview updatedReview = reviewStorage.update(review);
 		Assertions.assertEquals(updatedReview.getContent(), review.getContent());
 		Assertions.assertEquals(updatedReview.getFilmId(), review.getFilmId());
 		Assertions.assertEquals(updatedReview.getUserId(), review.getUserId());
-		Assertions.assertEquals(updatedReview.isPositive(), review.isPositive());
+		Assertions.assertEquals(updatedReview.getIsPositive(), review.getIsPositive());
 	}
 
 	@Test
@@ -478,16 +478,16 @@ class FilmorateApplicationTests {
 		reviewStorage.addLike(2, 1, true);
 
 		//Отзыв id 3 на 1 месте
-		Assertions.assertEquals(reviewStorage.getAll(10).get(0).getReviewId(), 3);
-		Assertions.assertEquals(reviewStorage.getReviewByFilmId(1,10).get(0).getReviewId(), 3);
+		Assertions.assertEquals(reviewStorage.getAll(10).get(0).getId(), 3);
+		Assertions.assertEquals(reviewStorage.getReviewByFilmId(1,10).get(0).getId(), 3);
 
 		//Отзыв id 2 на 2 месте
-		Assertions.assertEquals(reviewStorage.getAll(10).get(1).getReviewId(), 2);
-		Assertions.assertEquals(reviewStorage.getReviewByFilmId(1,10).get(1).getReviewId(), 2);
+		Assertions.assertEquals(reviewStorage.getAll(10).get(1).getId(), 2);
+		Assertions.assertEquals(reviewStorage.getReviewByFilmId(1,10).get(1).getId(), 2);
 
 		//Отзыв id 1 на 3 месте
-		Assertions.assertEquals(reviewStorage.getAll(10).get(2).getReviewId(), 1);
-		Assertions.assertEquals(reviewStorage.getReviewByFilmId(1,10).get(2).getReviewId(), 1);
+		Assertions.assertEquals(reviewStorage.getAll(10).get(2).getId(), 1);
+		Assertions.assertEquals(reviewStorage.getReviewByFilmId(1,10).get(2).getId(), 1);
 	}
 
 	@Test
@@ -507,9 +507,9 @@ class FilmorateApplicationTests {
 		review.setFilmId(filmId);
 		review.setUserId(1);
 		review.setContent("Положительный отзыв на фильм");
-		review.setPositive(true);
+		review.setIsPositive(true);
 		FilmReview addedReview = reviewStorage.create(review);
-		return addedReview.getReviewId();
+		return addedReview.getId();
 	}
 
 	@Test

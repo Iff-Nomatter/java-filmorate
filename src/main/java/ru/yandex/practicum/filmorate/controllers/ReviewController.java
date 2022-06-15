@@ -20,7 +20,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping("/review")
+@RequestMapping("/reviews")
 public class ReviewController {
     private final ReviewService reviewService;
 
@@ -35,7 +35,7 @@ public class ReviewController {
     }
 
     @DeleteMapping("/{id}")
-    public void remove(int id) {
+    public void remove(@PathVariable int id) {
         reviewService.remove(id);
     }
 

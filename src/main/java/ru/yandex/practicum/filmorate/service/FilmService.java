@@ -100,7 +100,9 @@ public class FilmService {
             throw new ValidationException("Пользователь с id: " + friendId +
                     " не является другом пользователя с id: " + userId);
         }
-        return storage.getCommonFilms(userId, friendId);
+        return storage.getCommonFilms(userId, friendId).stream().
+                sorted(Comparator.comparingInt(o -> -o.getLikeSet().size()))
+                .collect(Collectors.toList());
     }
 
     public void deleteFilm(int filmId) {

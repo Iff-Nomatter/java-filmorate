@@ -8,12 +8,12 @@ import javax.validation.constraints.NotNull;
 
 @Data
 public class FilmReview {
-    private int reviewId;
+    private int id;
     @NotBlank
     private String content;
     @NotNull
-    @JsonProperty("isPositive")
-    private boolean positive;
+    @JsonProperty(value = "isPositive", required = true)
+    private Boolean isPositive;
     @NotNull
     private int userId;
     @NotNull
