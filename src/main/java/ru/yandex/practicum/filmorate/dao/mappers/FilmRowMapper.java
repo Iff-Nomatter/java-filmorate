@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.dao.mappers;
 
 import org.springframework.jdbc.core.RowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.FilmDirector;
 import ru.yandex.practicum.filmorate.model.FilmRating;
 
 import java.sql.ResultSet;
@@ -20,7 +21,11 @@ public class FilmRowMapper implements RowMapper<Film> {
         film.setDuration(rs.getInt("DURATION"));
         FilmRating filmRating = new FilmRating();
         filmRating.setId(rs.getInt("RATING"));
+        filmRating.setName(rs.getString("MPA"));
         film.setMpa(filmRating);
+        FilmDirector filmDirector = new FilmDirector();
+        filmDirector.setId(rs.getInt("DIRECTOR_ID"));
+        film.setDirector(filmDirector);
 
         return film;
     }

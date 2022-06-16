@@ -4,26 +4,35 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.EventDbStorage;
 import ru.yandex.practicum.filmorate.exceptions.EntryNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enumerations.EventType;
+import ru.yandex.practicum.filmorate.model.enumerations.Operation;
+import ru.yandex.practicum.filmorate.model.FilmGenre;
+import ru.yandex.practicum.filmorate.model.FilmRating;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.SearchMode;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class FilmService {
     private final FilmStorage storage;
     private final UserStorage userStorage;
+    private final EventDbStorage eventDbStorage;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage storage,
-                       @Qualifier("userDbStorage") UserStorage userStorage) {
+                       @Qualifier("userDbStorage") UserStorage userStorage,
+                       @Qualifier("eventDbStorage") EventDbStorage eventDbStorage) {
         this.storage = storage;
         this.userStorage = userStorage;
+        this.eventDbStorage = eventDbStorage;
     }
 
     public void addFilm(Film film) {
@@ -42,7 +51,7 @@ public class FilmService {
         try {
             return storage.getFilmById(id);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntryNotFoundException("В базе отсутствует запись c id: " + id);
+            throw new EntryNotFoundException("В базе отсутствует фильм c id: " + id);
         } catch (NullPointerException e) {
             throw new EntryNotFoundException("Что-то пошло не так в базе данных.");
         }
@@ -52,7 +61,7 @@ public class FilmService {
         try {
             storage.updateFilm(film);
         } catch (EmptyResultDataAccessException e) {
-            throw new EntryNotFoundException("В базе отсутствует запись c id: " + film.getId());
+            throw new EntryNotFoundException("В базе отсутствует фильм c id: " + film.getId());
         }
     }
 
@@ -63,6 +72,7 @@ public class FilmService {
             throw new EntryNotFoundException("Пользователь с id: " + userId + " уже ставил лайк этому фильму!");
         }
         storage.addLike(film, userId);
+        eventDbStorage.addEventToFeed(userId, EventType.LIKE, Operation.ADD, filmId);
     }
 
     public void deleteLike(int filmId, int userId) {
@@ -72,16 +82,90 @@ public class FilmService {
             throw new EntryNotFoundException("Пользователь с id: " + userId + " не ставил лайк этому фильму!");
         }
         storage.deleteLike(film, userId);
+        eventDbStorage.addEventToFeed(userId, EventType.LIKE, Operation.REMOVE, filmId);
     }
     
-    public List<Film> getTopByLikes(Integer count) {
-        if (count == null || count <= 0) {
-            count = 10;
-        }
+    public List<Film> getTopByLikes(Integer limit, String genre, Integer year) {
         Comparator<Film> likeAmountComparator = Comparator.comparingInt(o -> o.getLikeSet().size());
-        return storage.getAllFilms().stream()
+        return storage.getPopular(genre, year).stream()
                 .sorted(likeAmountComparator.reversed())
-                .limit(count)
+                .limit(limit)
                 .collect(Collectors.toList());
     }
+
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        User user = userStorage.getUserById(userId);
+        User friend = userStorage.getUserById(friendId);
+        if (!user.getFriendSet().containsKey(friend.getId())) {
+            throw new ValidationException("Пользователь с id: " + friendId +
+                    " не является другом пользователя с id: " + userId);
+        }
+        return storage.getCommonFilms(userId, friendId).stream().
+                sorted(Comparator.comparingInt(o -> -o.getLikeSet().size()))
+                .collect(Collectors.toList());
+    }
+
+    public void deleteFilm(int filmId) {
+        storage.deleteFilm(filmId);
+    }
+
+    public List<FilmRating> getAllRatings() {
+        return storage.getAllRatings();
+    }
+
+    public FilmRating getRatingById(int ratingId) {
+        try {
+            return storage.getRatingById(ratingId);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntryNotFoundException("В базе отсутствует рейтинг c id: " + ratingId);
+        }
+    }
+
+    public List<FilmGenre> getAllGenres() {
+        return storage.getAllGenres();
+    }
+
+    public FilmGenre getGenreById(int genreId) {
+        try {
+            return storage.getGenreById(genreId);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntryNotFoundException("В базе отсутствует жанр c id: " + genreId);
+        }
+    }
+
+    public List<Film> search(String query, List <String> by) {
+        SearchMode mode;
+        if (by == null) {
+            mode = SearchMode.SEARCH_BY_TITLE;
+        } else {
+            if (by.contains("director") && by.contains("title")) {
+                mode = SearchMode.SEARCH_BY_TITLE_OR_DIRECTOR;
+            } else if (by.contains("director")) {
+                mode = SearchMode.SEARCH_BY_DIRECTOR;
+            } else if (by.contains("title")) {
+                mode = SearchMode.SEARCH_BY_TITLE;
+            } else {
+                throw new IllegalArgumentException("Unknown search mode");
+            }
+        }
+
+        return storage.search(query, mode).stream().
+                sorted(Comparator.comparingInt(o -> -o.getLikeSet().size()))
+                .collect(Collectors.toList());
+    }
+
+    public List<Film> getByDirector(int directorId, String sortBy) {
+        Comparator<Film> comparator;
+        if (sortBy.equals("year")) {
+            comparator = Comparator.comparingInt(f -> f.getReleaseDate().getYear());
+        } else if (sortBy.equals("likes")) {
+            comparator = Comparator.comparingInt(f -> f.getLikeSet().size());
+        } else {
+            throw new IllegalArgumentException("Некорректное значение параметра sortBy: " + sortBy);
+        }
+        return storage.getByDirector(directorId).stream()
+                .sorted(comparator.reversed())
+                .collect(Collectors.toList());
+    }
+
 }

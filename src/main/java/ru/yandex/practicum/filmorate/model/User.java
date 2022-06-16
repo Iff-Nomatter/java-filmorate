@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import ru.yandex.practicum.filmorate.model.enumerations.FriendshipStatus;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;

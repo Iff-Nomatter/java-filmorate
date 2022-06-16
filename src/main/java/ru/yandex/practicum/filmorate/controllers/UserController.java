@@ -4,9 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -50,6 +51,12 @@ public class UserController {
         return userService.getCommonFriendsList(id, otherId);
     }
 
+    @GetMapping("/{id}/feed")
+    public List<Event> getUsersFeed(@PathVariable int id) {
+        log.info("Запрошена лента событий пользователя id: " + id);
+        return userService.getUsersFeed(id);
+    }
+
     @PostMapping
     public ResponseEntity<User> create(@Valid @RequestBody User user) {
         userService.addUser(user);
@@ -74,5 +81,17 @@ public class UserController {
     public void deleteFromFriends(@PathVariable int id, @PathVariable int friendId) {
         userService.deleteFromFriends(id, friendId);
         log.info("Пользователь id" + id + " удалил из друзей пользователя id" + friendId + " :(");
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<Film> getRecomendation(@PathVariable int id) {
+        log.info("Запрошены рекомендации для пользователя с id: " + id);
+        return userService.getRecomendation(id);
+    }
+
+    @DeleteMapping("/{userId}")
+    public void deleteUser(@PathVariable int userId) {
+        userService.deleteUser(userId);
+        log.info("Пользователь id: " + userId + " удален.");
     }
 }

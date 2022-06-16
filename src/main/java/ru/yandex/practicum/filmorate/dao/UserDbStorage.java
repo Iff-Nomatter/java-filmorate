@@ -7,7 +7,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.mappers.UserRowMapper;
-import ru.yandex.practicum.filmorate.model.FriendshipStatus;
+import ru.yandex.practicum.filmorate.model.enumerations.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -32,6 +32,8 @@ public class UserDbStorage implements UserStorage {
     final String USER_REMOVE_FRIEND = "DELETE FROM USER_FRIEND WHERE USER_ID = ? AND FRIEND_ID = ?";
     final String USER_REMOVE_FRIEND_FRIEND_PENDING = "UPDATE USER_FRIEND SET FRIENDSHIP_STATUS = ? " +
             "WHERE USER_ID = ? AND FRIEND_ID = ?";
+    final String USER_REMOVE = "DELETE FROM USERS WHERE USER_ID = ?";
+
     private final JdbcTemplate jdbcTemplate;
 
     public UserDbStorage(JdbcTemplate jdbcTemplate) {
@@ -76,8 +78,15 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
+    public void deleteUser(int userId) {
+        jdbcTemplate.update(USER_REMOVE, userId);
+    }
+
+    @Override
     public void addToFriends(User user, User friend) {
         if (friend.getFriendSet().containsKey(user.getId())) {
+            jdbcTemplate.update(USER_ADD_FRIEND_PENDING,
+                    user.getId(), friend.getId(), FriendshipStatus.APPROVED.toString());
             jdbcTemplate.update(USER_ADD_FRIEND_APPROVED,
                     FriendshipStatus.APPROVED.toString(),
                     user.getId(),
